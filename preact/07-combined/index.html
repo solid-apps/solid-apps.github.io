@@ -890,7 +890,7 @@ function IssueRow({ issue, onToggle, onEdit, onDelete }) {
     </div>`
 }
 
-function TrackerColumn({ url }) {
+function TrackerColumn({ url, hideCompleted }) {
   const t = useTracker(url)
   const [draft, setDraft] = useState('')
   const submit = (e) => { e?.preventDefault?.(); const v = draft.trim(); if (!v) return; t.addIssue(v); setDraft('') }
@@ -898,17 +898,18 @@ function TrackerColumn({ url }) {
   if (t.loading) return html`<div class="col"><div class="col-head"><div class="col-title">Loading…</div></div></div>`
   if (t.error && !t.doc) return html`<div class="col"><div class="col-head"><div class="col-title">Error</div></div><div class="err">${t.error}</div></div>`
   const doc = t.doc || {}
-  const issues = Array.isArray(doc.issue) ? doc.issue : (doc.issue ? [doc.issue] : [])
-  const open = issues.filter(i => i.status !== 'COMPLETED').length
+  const allIssues = Array.isArray(doc.issue) ? doc.issue : (doc.issue ? [doc.issue] : [])
+  const open = allIssues.filter(i => i.status !== 'COMPLETED').length
+  const visible = hideCompleted ? allIssues.filter(i => i.status !== 'COMPLETED') : allIssues
   return html`
     <div class="col">
       <div class="col-head">
         <div class="col-title">${doc.title || url.split('/').pop()}</div>
-        <div class="col-count">${open}/${issues.length}</div>
+        <div class="col-count">${open}/${allIssues.length}</div>
         ${t.status && html`<div class=${'col-status ' + t.status}>${t.status === 'saving' ? '\u2026 saving' : t.status === 'saved' ? '\u2713 saved' : '\u26a0 ' + (t.error || 'error')}</div>`}
       </div>
       <div class="issues">
-        ${issues.map(it => html`<${IssueRow} key=${it['@id']} issue=${it}
+        ${visible.map(it => html`<${IssueRow} key=${it['@id']} issue=${it}
           onToggle=${() => t.toggleIssue(it['@id'])}
           onEdit=${(v) => t.editIssue(it['@id'], v)}
           onDelete=${() => t.deleteIssue(it['@id'])} />`)}
@@ -919,10 +920,14 @@ function TrackerColumn({ url }) {
     </div>`
 }
 
+const HIDE_KEY = 'solid-preact.hideCompleted'
+
 function TasksView({ identity }) {
   const webid = identity?.type === 'solid' ? identity.id : null
   const ti = useTypeIndex(webid)
   const urls = findRegistrations(ti.data, TRACKER_CLASS).map(r => r.instance).filter(Boolean)
+  const [hideCompleted, setHideCompleted] = useState(() => localStorage.getItem(HIDE_KEY) === '1')
+  useEffect(() => { localStorage.setItem(HIDE_KEY, hideCompleted ? '1' : '0') }, [hideCompleted])
 
   if (!webid) return html`
     <div>
@@ -939,13 +944,17 @@ function TasksView({ identity }) {
       <div style=${{ marginBottom: '14px', fontSize: '12px', color: 'var(--muted)', display: 'flex', gap: '8px', alignItems: 'center' }}>
         <span class="island-badge" style=${{ background: '#d1fae5', color: '#065f46' }}>discovery</span>
         <span>${status}</span>
+        <label style=${{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', userSelect: 'none', color: 'var(--text)' }}>
+          <input type="checkbox" checked=${hideCompleted} onChange=${(e) => setHideCompleted(e.target.checked)} style=${{ accentColor: '#6366f1' }} />
+          <span>Hide completed</span>
+        </label>
       </div>
       <h1 class="page-title">Tasks</h1>
       <p class="page-sub">Discovered via your TypeIndex. All edits PUT back to your pod.</p>
       ${urls.length === 0 && !ti.loading
         ? html`<div class="card" style=${{ marginTop: '18px', color: 'var(--muted)' }}>No <code>wf:Tracker</code> registrations in your TypeIndex yet.</div>`
         : html`<div class="columns">
-            ${urls.map(u => html`<${TrackerColumn} key=${u} url=${u} />`)}
+            ${urls.map(u => html`<${TrackerColumn} key=${u} url=${u} hideCompleted=${hideCompleted} />`)}
           </div>`}
     </div>`
 }
