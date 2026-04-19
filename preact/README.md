@@ -16,7 +16,8 @@ Each stage is a single self-contained HTML file (zero build). A stage graduates 
 | 04-login | xlogin integration (Nostr/Solid). Listens for `xlogin`/`xlogout` events, shows the live identity in the sidebar, fetches the Solid WebID doc as JSON-LD after login, normalizes common foaf/vcard predicates, and overlays fetched values onto the sample island. Graceful fallback when the pod doesn't speak JSON-LD. |
 | 05-discovery | TypeIndex discovery — fetches `solid:publicTypeIndex`, walks `solid:TypeRegistration` nodes for `solid:forClass` + `solid:instance`, and renders a Tasks view backed by the user's `wf:Tracker` resources in their pod. Settings exposes the registration list as a debug aid. No Turtle parser — relies on pods that serve JSON-LD via conneg. |
 | 06-tasks | First focused single-purpose app: Tasks. Discovers `wf:Tracker` registrations via TypeIndex, fetches each, renders kanban columns. Add / toggle / edit / delete tasks → debounced PUT back to the pod via `xlogin.authFetch`. The closing of the read/write loop. |
-| 07+ | TBD — whatever the previous stages surface as the next limit. |
+| 07-combined | The synthesis: multi-view shell (Profile · Tasks · Contacts · Calendar · Settings) + Profile inline edit with WebID-doc-preserving write-back + Tasks full CRUD. `useEditableProfile` tracks the whole fetched JSON-LD doc so PUTs don't clobber pod-only fields (`solid:oidcIssuer`, `space:storage`, etc.). Real Solid editor in one HTML file. |
+| 08+ | TBD — whatever the previous stages surface as the next limit. |
 
 ## Findings
 
