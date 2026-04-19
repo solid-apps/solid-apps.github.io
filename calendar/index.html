@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event — solid-apps</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #fafaf8; }
+  #losos { max-width: 100% !important; }
+  #losos > div { max-width: 100% !important; width: 100% !important; }
+</style>
+</head>
+<body>
+
+<!-- Sample data: a real Solid CG meeting. Same shape works for any Event:
+     name, summary, startTime, endTime, location, attributedTo. -->
+<script type="application/ld+json">
+{
+  "@context": { "@vocab": "urn:solid:" },
+  "@id": "#this",
+  "@type": "Event",
+  "name": "Solid Community Group call",
+  "summary": "Bi-weekly W3C Solid CG sync — agenda, demos, and open issues. Open to anyone.",
+  "startTime": "2026-04-22T15:00:00Z",
+  "endTime": "2026-04-22T16:00:00Z",
+  "location": "https://meet.jit.si/solid",
+  "attributedTo": "https://www.w3.org/community/solid/"
+}
+</script>
+
+<!-- Login: Nostr + Solid in one tag. -->
+<script src="https://unpkg.com/xlogin"></script>
+
+<!-- Panes — bespoke Event view first, then schema-driven. -->
+<script type="module" data-pane src="./calendar-view-pane.js"></script>
+<script type="module" data-pane src="https://solid-ui.github.io/ui-pane.js"></script>
+<script type="module" data-pane src="https://losos.org/panes/schema-pane.js"></script>
+<script type="module" data-pane src="https://solid-panes.github.io/schema-view.js"></script>
+<script type="module" data-pane src="https://losos.org/panes/source-pane.js"></script>
+
+<div id="losos"></div>
+
+<!-- Boot: autoSchema patches $schema, then shell -->
+<script type="module">
+  import { autoSchema } from 'https://solid-panes.github.io/auto-schema.js'
+  const result = await autoSchema()
+  console.log('[calendar] autoSchema patched', result.patched, 'island(s),', result.skipped, 'skipped')
+  await import('https://losos.org/losos/shell.js')
+</script>
+
+</body>
+</html>

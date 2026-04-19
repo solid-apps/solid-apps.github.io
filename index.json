@@ -10,6 +10,17 @@
     "status": "stable",
     "manifest": "/bookmark/app.json"
   },
+  "calendar": {
+    "name": "Event",
+    "description": "A calendar entry — schema-driven Event with date/time pickers.",
+    "entry": "/calendar/index.html",
+    "types": [
+      "urn:solid:Event"
+    ],
+    "icon": "📅",
+    "status": "stable",
+    "manifest": "/calendar/app.json"
+  },
   "contacts": {
     "name": "Contacts",
     "description": "An address book — collection of contacts as a card grid. Bespoke Contacts view (avatar grid with name + nick/email) plus Inline edit, Edit, View, Source — all schema-driven from urn:solid:AddressBook.",

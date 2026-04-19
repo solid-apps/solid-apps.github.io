@@ -2,6 +2,9 @@
   "urn:solid:Bookmark": [
     "/bookmark/"
   ],
+  "urn:solid:Event": [
+    "/calendar/"
+  ],
   "urn:solid:AddressBook": [
     "/contacts/"
   ],
