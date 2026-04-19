@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPA — solid-preact 03</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f5f5f9; color: #222;
+  }
+
+  /* Shell */
+  .shell {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+  }
+  .rail {
+    background: #1e1b2e;
+    color: #e9e8f3;
+    padding: 28px 18px;
+    border-right: 1px solid #15131f;
+    position: sticky; top: 0; align-self: start; min-height: 100vh;
+  }
+  .brand {
+    font: 700 18px/1 'Inter', sans-serif;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .brand .logo {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #fff;
+  }
+  .nav { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .nav a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 8px;
+    color: #c9c6dc; text-decoration: none;
+    font-size: 14px; font-weight: 500;
+    transition: background .14s, color .14s;
+  }
+  .nav a:hover { background: #2a2640; color: #fff; }
+  .nav a.active { background: linear-gradient(135deg, #7c3aed, #6366f1); color: #fff; }
+  .nav .ic { font-size: 16px; }
+
+  main {
+    padding: 40px 32px 80px;
+    max-width: 1060px;
+    width: 100%;
+  }
+
+  @media (max-width: 760px) {
+    .shell { grid-template-columns: 1fr; }
+    .rail { position: static; min-height: 0; padding: 16px 20px; display: flex; align-items: center; gap: 20px; }
+    .brand { margin-bottom: 0; }
+    .nav { flex-direction: row; gap: 4px; flex: 1; }
+    .nav .ic { display: none; }
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e8e8ee;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.03);
+  }
+  .card + .card { margin-top: 18px; }
+
+  /* Two-column grid for Profile view */
+  .two-col {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 18px; align-items: start;
+  }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* Profile bits */
+  .hero { display: flex; gap: 22px; align-items: flex-start; }
+  .photo, .photo-fallback { width: 120px; height: 120px; border-radius: 16px; flex: 0 0 auto; }
+  .photo { object-fit: cover; background: #eef; }
+  .photo-fallback {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff; font: 600 52px/120px Georgia, serif;
+    text-align: center;
+  }
+  .name { font: 700 26px/1.2 'Inter', sans-serif; color: #1a1a1a; letter-spacing: -0.3px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .pronoun { font: 400 14px/1; color: #6366f1; }
+  .facts { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; font-size: 14px; color: #444; }
+  @media (max-width: 600px) { .facts { grid-template-columns: 1fr; } }
+  .fact { display: flex; align-items: center; gap: 8px; }
+  .fact .ic { opacity: .55; }
+  .fact a { color: inherit; text-decoration: none; }
+  .fact a:hover { color: #6366f1; }
+
+  .section-title { font: 700 17px/1.2 'Inter', sans-serif; color: #1a1a1a; margin-bottom: 12px; }
+  .prose { font: 400 15px/1.65 Georgia, serif; color: #333; }
+  .side-title { font: 700 15px/1 'Inter', sans-serif; color: #1a1a1a; margin-bottom: 12px; }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill { padding: 3px 11px; border-radius: 999px; background: #eef0fe; color: #4338ca; font-size: 13px; font-weight: 500; }
+  .list-plain { list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #333; }
+
+  /* Contacts grid */
+  .page-title { font: italic 400 36px/1.1 Georgia, serif; color: #1a1a1a; letter-spacing: -0.6px; margin-bottom: 4px; }
+  .page-sub { font: 400 14px/1.5 'Inter', -apple-system, sans-serif; color: #888; margin-bottom: 8px; }
+  .page-count { font: 600 11px/1 'Inter'; letter-spacing: .12em; text-transform: uppercase; color: #999; margin-bottom: 22px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .contact-card {
+    background: #fff; border: 1px solid #e8e8ee; border-radius: 12px;
+    padding: 18px; display: flex; gap: 12px; align-items: center;
+    text-decoration: none; color: inherit; transition: transform .16s, border-color .16s, box-shadow .16s;
+  }
+  .contact-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.06); border-color: #6366f1; }
+  .avatar, .avatar-fb { width: 48px; height: 48px; border-radius: 50%; flex: 0 0 auto; }
+  .avatar { object-fit: cover; }
+  .avatar-fb {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff; font: 600 19px/48px Georgia, serif;
+    text-align: center;
+  }
+  .c-name { font: 600 15px/1.2 'Inter'; color: #1a1a1a; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c-sub { font: 400 12.5px/1.4 'Inter'; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Calendar card */
+  .ev-card {
+    display: flex; gap: 24px; align-items: flex-start;
+  }
+  .ev-date { flex: 0 0 auto; width: 88px; border: 1px solid #e8e8ee; border-radius: 12px; overflow: hidden; text-align: center; }
+  .ev-month { background: #ef4444; color: #fff; font: 600 12px/1 'Inter'; padding: 7px; letter-spacing: .18em; text-transform: uppercase; }
+  .ev-day { font: 500 40px/1 Georgia, serif; color: #1a1a1a; padding: 14px 0; background: #fafaf8; }
+  .ev-meta { flex: 1; min-width: 0; }
+  .ev-name { font: 500 24px/1.2 Georgia, serif; color: #1a1a1a; letter-spacing: -0.3px; margin-bottom: 6px; }
+  .ev-when { font: 500 13px/1.4 'Inter'; color: #666; margin-bottom: 16px; }
+  .ev-summary { font: 400 15px/1.6 Georgia, serif; color: #444; margin-bottom: 16px; }
+  .ev-row { display: flex; gap: 8px; align-items: center; padding-top: 12px; margin-top: 12px; border-top: 1px solid #e8e8ee; font: 400 13px/1.4 'Inter'; color: #666; }
+  .ev-row + .ev-row { border-top: none; padding-top: 0; margin-top: 5px; }
+  .ev-row a { color: #1a5276; text-decoration: none; }
+  .ev-row a:hover { color: #6366f1; }
+  .ev-row .ic { opacity: 0.6; }
+
+  .footer-tag {
+    margin-top: 28px; text-align: center;
+    font: 500 11px/1.4 ui-monospace, monospace;
+    color: #888; letter-spacing: 0.05em;
+  }
+  .footer-tag code { padding: 2px 7px; border-radius: 4px; background: #eef0fe; color: #4338ca; }
+</style>
+</head>
+<body>
+
+<!-- One data island per view. Each is typed so consumers can match by @type
+     the same way LOSOS panes do. -->
+<script type="application/ld+json" data-view="profile">
+{
+  "@context": { "@vocab": "urn:solid:" },
+  "@id": "#me",
+  "@type": "Person",
+  "name": "Sir Tim Berners-Lee",
+  "nick": "timbl",
+  "pronouns": "he/him",
+  "email": "timbl@w3.org",
+  "phone": "+1 617 000 0000",
+  "homepage": "https://www.w3.org/People/Berners-Lee/",
+  "img": "https://www.w3.org/People/Berners-Lee/Press/stock-photos/tim-berners-lee-inrupt-2024.jpg",
+  "address": "Cambridge, MA, United States",
+  "bio": "Inventor of the World Wide Web. Director of the World Wide Web Consortium. Co-founder of Inrupt and the Solid project.",
+  "skills": ["Web Architecture", "RDF", "Linked Data", "HTTP", "Standards"],
+  "languages": ["English", "French"]
+}
+</script>
+
+<script type="application/ld+json" data-view="contacts">
+{
+  "@context": { "@vocab": "urn:solid:" },
+  "@id": "#contacts",
+  "@type": "AddressBook",
+  "title": "Web Developers",
+  "description": "A few people working on the web.",
+  "hasMember": [
+    { "@id": "https://www.w3.org/People/Berners-Lee/card#i", "@type": "Person", "name": "Sir Tim Berners-Lee", "nick": "timbl", "img": "https://www.w3.org/People/Berners-Lee/Press/stock-photos/tim-berners-lee-inrupt-2024.jpg" },
+    { "@id": "https://melvincarvalho.com/#me", "@type": "Person", "name": "Melvin Carvalho", "nick": "melvincarvalho", "homepage": "https://melvincarvalho.com/" },
+    { "@id": "https://ruben.verborgh.org/profile/#me", "@type": "Person", "name": "Ruben Verborgh", "nick": "rubenverborgh", "homepage": "https://ruben.verborgh.org/" }
+  ]
+}
+</script>
+
+<script type="application/ld+json" data-view="calendar">
+{
+  "@context": { "@vocab": "urn:solid:" },
+  "@id": "#meeting",
+  "@type": "Event",
+  "name": "Solid Community Group call",
+  "summary": "Bi-weekly W3C Solid CG sync — agenda, demos, and open issues. Open to anyone.",
+  "startTime": "2026-04-22T15:00:00Z",
+  "endTime": "2026-04-22T16:00:00Z",
+  "location": "https://meet.jit.si/solid",
+  "attributedTo": "https://www.w3.org/community/solid/"
+}
+</script>
+
+<div id="app"></div>
+
+<script type="module">
+import { h, render } from 'https://esm.sh/preact@10'
+import { useState, useEffect } from 'https://esm.sh/preact@10/hooks'
+import htm from 'https://esm.sh/htm@3'
+
+const html = htm.bind(h)
+
+// --- data access -----------------------------------------------------------
+
+function readIsland(view) {
+  const el = document.querySelector(`script[data-view="${view}"]`)
+  try { return JSON.parse(el.textContent) } catch { return null }
+}
+
+// --- routing ---------------------------------------------------------------
+
+function useHashRoute(fallback) {
+  const parse = () => (window.location.hash || '').replace(/^#\/?/, '') || fallback
+  const [route, setRoute] = useState(parse)
+  useEffect(() => {
+    const onChange = () => setRoute(parse())
+    window.addEventListener('hashchange', onChange)
+    return () => window.removeEventListener('hashchange', onChange)
+  }, [])
+  return route
+}
+
+// --- view: Profile --------------------------------------------------------
+
+const niceLink = (u) => (u || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
+const initial  = (s) => (s || '?').trim().split(/\s+/).pop().charAt(0).toUpperCase()
+
+function ProfileView() {
+  const data = readIsland('profile') || {}
+  const { name, nick, pronouns, address, email, phone, homepage, img, bio, skills = [], languages = [] } = data
+  return html`
+    <div class="two-col">
+      <div>
+        <div class="card">
+          <div class="hero">
+            ${img
+              ? html`<img class="photo" src=${img} alt=${name} onerror=${(e) => { const f = document.createElement('div'); f.className = 'photo-fallback'; f.textContent = initial(name); e.target.replaceWith(f) }} />`
+              : html`<div class="photo-fallback">${initial(name)}</div>`}
+            <div>
+              <h1 class="name">
+                <span>${name}</span>
+                ${pronouns && html`<span class="pronoun">(${pronouns})</span>`}
+              </h1>
+              <div class="facts">
+                ${address  && html`<div class="fact"><span class="ic">\u{1F4CD}</span><span>${address}</span></div>`}
+                ${phone    && html`<div class="fact"><span class="ic">\u{260E}\uFE0F</span><a href="tel:${phone.replace(/\s+/g,'')}">${phone}</a></div>`}
+                ${email    && html`<div class="fact"><span class="ic">\u{2709}\uFE0F</span><a href="mailto:${email}">${email}</a></div>`}
+                ${homepage && html`<div class="fact"><span class="ic">\u{1F310}</span><a href=${homepage} target="_blank" rel="noopener">${niceLink(homepage)}</a></div>`}
+              </div>
+            </div>
+          </div>
+        </div>
+        ${bio && html`
+          <div class="card">
+            <h2 class="section-title">Bio</h2>
+            <p class="prose">${bio}</p>
+          </div>`}
+      </div>
+      <div>
+        ${skills.length > 0 && html`
+          <div class="card">
+            <h3 class="side-title">Skills</h3>
+            <div class="pills">${skills.map(s => html`<span class="pill">${s}</span>`)}</div>
+          </div>`}
+        ${languages.length > 0 && html`
+          <div class="card">
+            <h3 class="side-title">Languages</h3>
+            <ul class="list-plain">${languages.map(l => html`<li>${l}</li>`)}</ul>
+          </div>`}
+      </div>
+    </div>
+  `
+}
+
+// --- view: Contacts --------------------------------------------------------
+
+const niceHost = (u) => { try { return new URL(u).host.replace(/^www\./, '') } catch { return u } }
+
+function ContactsView() {
+  const data = readIsland('contacts') || {}
+  const members = (Array.isArray(data.hasMember) ? data.hasMember : []).map(m => {
+    if (typeof m === 'string') return { id: m }
+    return { id: m['@id'], name: m.name, nick: m.nick, email: m.email, img: m.img, homepage: m.homepage }
+  })
+  const displayName = (m) => m.name || m.nick || (m.id ? niceHost(m.id) : 'Unknown')
+
+  return html`
+    <div>
+      <h1 class="page-title">${data.title || 'Contacts'}</h1>
+      ${data.description && html`<p class="page-sub">${data.description}</p>`}
+      <div class="page-count">${members.length} ${members.length === 1 ? 'contact' : 'contacts'}</div>
+      <div class="grid">
+        ${members.map(m => {
+          const n = displayName(m)
+          const sub = m.nick ? '@' + m.nick : (m.email || (m.id ? niceHost(m.id) : ''))
+          return html`
+            <a class="contact-card" href=${m.id || m.homepage || '#'} target="_blank" rel="noopener">
+              ${m.img
+                ? html`<img class="avatar" src=${m.img} alt=${n} />`
+                : html`<div class="avatar-fb">${initial(n)}</div>`}
+              <div style=${{ minWidth: 0, flex: 1 }}>
+                <div class="c-name">${n}</div>
+                ${sub && html`<div class="c-sub">${sub}</div>`}
+              </div>
+            </a>
+          `
+        })}
+      </div>
+    </div>
+  `
+}
+
+// --- view: Calendar --------------------------------------------------------
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+
+function partsOf(iso) {
+  if (!iso) return null
+  const d = new Date(iso)
+  if (isNaN(d)) return null
+  return { month: MONTHS[d.getMonth()], day: d.getDate(),
+    weekday: d.toLocaleDateString(undefined, { weekday: 'long' }),
+    time: d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) }
+}
+
+function CalendarView() {
+  const data = readIsland('calendar') || {}
+  const { name, summary } = data
+  const start = partsOf(data.startTime), end = partsOf(data.endTime)
+  const location = (typeof data.location === 'object' ? data.location['@id'] : data.location) || ''
+  const attributedTo = typeof data.attributedTo === 'string' ? data.attributedTo : data.attributedTo?.['@id']
+  const range = start && end && start.time !== end.time ? `${start.time} \u2013 ${end.time}` : start?.time
+  const when = start ? `${start.weekday}${range ? ' \u00b7 ' + range : ''}` : null
+  const isUrl = (s) => /^https?:\/\//.test(s)
+
+  return html`
+    <div class="card">
+      <div class="ev-card">
+        ${start ? html`
+          <div class="ev-date">
+            <div class="ev-month">${start.month}</div>
+            <div class="ev-day">${start.day}</div>
+          </div>
+        ` : html`<div class="ev-date"><div class="ev-month">—</div><div class="ev-day">?</div></div>`}
+        <div class="ev-meta">
+          <h1 class="ev-name">${name || 'Untitled Event'}</h1>
+          ${when && html`<div class="ev-when">${when}</div>`}
+          ${summary && html`<p class="ev-summary">${summary}</p>`}
+          ${location && html`
+            <div class="ev-row">
+              <span class="ic">\u{1F4CD}</span>
+              ${isUrl(location)
+                ? html`<a href=${location} target="_blank" rel="noopener">${niceHost(location)}</a>`
+                : html`<span>${location}</span>`}
+            </div>`}
+          ${attributedTo && html`
+            <div class="ev-row">
+              <span class="ic">\u{1F464}</span>
+              ${isUrl(attributedTo)
+                ? html`<a href=${attributedTo} target="_blank" rel="noopener">${niceHost(attributedTo)}</a>`
+                : html`<span>${attributedTo}</span>`}
+            </div>`}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+// --- shell -----------------------------------------------------------------
+
+const VIEWS = {
+  profile:  { label: 'Profile',  icon: '\u{1F464}', Component: ProfileView  },
+  contacts: { label: 'Contacts', icon: '\u{1F4D2}', Component: ContactsView },
+  calendar: { label: 'Calendar', icon: '\u{1F4C5}', Component: CalendarView },
+}
+
+function App() {
+  const route = useHashRoute('profile')
+  const current = VIEWS[route] || VIEWS.profile
+  const ViewComponent = current.Component
+
+  return html`
+    <div class="shell">
+      <aside class="rail">
+        <div class="brand"><span class="logo">S</span><span>solid</span></div>
+        <ul class="nav">
+          ${Object.entries(VIEWS).map(([key, v]) => html`
+            <li>
+              <a href=${'#/' + key} class=${route === key ? 'active' : ''}>
+                <span class="ic">${v.icon}</span><span>${v.label}</span>
+              </a>
+            </li>
+          `)}
+        </ul>
+      </aside>
+      <main>
+        <${ViewComponent} />
+        <div class="footer-tag">stage 03 \u2014 hash routes \u2014 <code>#/profile</code> <code>#/contacts</code> <code>#/calendar</code></div>
+      </main>
+    </div>
+  `
+}
+
+render(html`<${App} />`, document.getElementById('app'))
+</script>
+
+</body>
+</html>
