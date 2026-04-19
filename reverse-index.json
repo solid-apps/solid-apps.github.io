@@ -1,4 +1,7 @@
 {
+  "urn:solid:Person": [
+    "/profile/"
+  ],
   "urn:solid:Tracker": [
     "/todos/"
   ],

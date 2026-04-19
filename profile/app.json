@@ -1,0 +1,10 @@
+{
+  "name": "Profile",
+  "description": "Your card on the web. Beautiful schema-driven Person page with bespoke Profile view, schema-driven Edit, and Source. Open ?uri=<your-webid> to view any Solid profile.",
+  "entry": "./index.html",
+  "types": ["urn:solid:Person"],
+  "icon": "\ud83d\udc64",
+  "author": "Melvin Carvalho",
+  "status": "stable",
+  "added": "2026-04-19"
+}

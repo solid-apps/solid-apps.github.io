@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Profile — solid-apps</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #fafaf8; }
+  #losos { max-width: 100% !important; }
+  #losos > div { max-width: 100% !important; width: 100% !important; }
+</style>
+</head>
+<body>
+
+<!-- Sample data: Sir Tim Berners-Lee. Same person used by the LOSOS vcard demo,
+     here through a urn:solid:Person lens to keep the cross-app interop story coherent. -->
+<script type="application/ld+json">
+{
+  "@context": { "@vocab": "urn:solid:" },
+  "@id": "https://www.w3.org/People/Berners-Lee/card#i",
+  "@type": "Person",
+  "name": "Sir Tim Berners-Lee",
+  "nick": "timbl",
+  "email": "timbl@w3.org",
+  "homepage": "https://www.w3.org/People/Berners-Lee/",
+  "img": "https://www.w3.org/People/Berners-Lee/Press/stock-photos/tim-berners-lee-inrupt-2024.jpg",
+  "knows": [
+    "https://csarven.ca/#i",
+    "https://melvincarvalho.com/#me",
+    "https://ruben.verborgh.org/profile/#me"
+  ]
+}
+</script>
+
+<!-- Login: Nostr + Solid in one tag. -->
+<script src="https://unpkg.com/xlogin"></script>
+
+<!-- Panes — order matters for tab order. Profile (bespoke) first, then schema-driven. -->
+<script type="module" data-pane src="./profile-view-pane.js"></script>
+<script type="module" data-pane src="https://losos.org/panes/schema-pane.js"></script>
+<script type="module" data-pane src="https://solid-panes.github.io/schema-view.js"></script>
+<script type="module" data-pane src="https://losos.org/panes/source-pane.js"></script>
+
+<div id="losos"></div>
+
+<!-- Boot: autoSchema patches $schema (so schema-pane + schema-view fire), then shell -->
+<script type="module">
+  import { autoSchema } from 'https://solid-panes.github.io/auto-schema.js'
+  const result = await autoSchema()
+  console.log('[profile] autoSchema patched', result.patched, 'island(s),', result.skipped, 'skipped')
+  await import('https://losos.org/losos/shell.js')
+</script>
+
+</body>
+</html>
