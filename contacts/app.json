@@ -1,0 +1,10 @@
+{
+  "name": "Contacts",
+  "description": "An address book — collection of contacts as a card grid. Bespoke Contacts view (avatar grid with name + nick/email) plus Inline edit, Edit, View, Source — all schema-driven from urn:solid:AddressBook.",
+  "entry": "./index.html",
+  "types": ["urn:solid:AddressBook"],
+  "icon": "\ud83d\udcd2",
+  "author": "Melvin Carvalho",
+  "status": "stable",
+  "added": "2026-04-19"
+}

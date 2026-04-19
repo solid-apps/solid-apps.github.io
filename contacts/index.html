@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contacts — solid-apps</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #fafaf8; }
+  #losos { max-width: 100% !important; }
+  #losos > div { max-width: 100% !important; width: 100% !important; }
+</style>
+</head>
+<body>
+
+<!-- Sample data: an address book of well-known web folks. Inlined Person
+     objects so the demo is self-contained — in production each member
+     would typically be a bare URI reference to an external Person resource. -->
+<script type="application/ld+json">
+{
+  "@context": { "@vocab": "urn:solid:" },
+  "@id": "#this",
+  "@type": "AddressBook",
+  "title": "Web Heroes",
+  "description": "A few people who shaped the web.",
+  "hasMember": [
+    {
+      "@id": "https://www.w3.org/People/Berners-Lee/card#i",
+      "@type": "Person",
+      "name": "Sir Tim Berners-Lee",
+      "nick": "timbl",
+      "email": "timbl@w3.org",
+      "homepage": "https://www.w3.org/People/Berners-Lee/",
+      "img": "https://www.w3.org/People/Berners-Lee/Press/stock-photos/tim-berners-lee-inrupt-2024.jpg"
+    },
+    {
+      "@id": "https://melvincarvalho.com/#me",
+      "@type": "Person",
+      "name": "Melvin Carvalho",
+      "nick": "melvincarvalho",
+      "homepage": "https://melvincarvalho.com/"
+    },
+    {
+      "@id": "https://ruben.verborgh.org/profile/#me",
+      "@type": "Person",
+      "name": "Ruben Verborgh",
+      "nick": "rubenverborgh",
+      "homepage": "https://ruben.verborgh.org/"
+    }
+  ]
+}
+</script>
+
+<!-- Login: Nostr + Solid in one tag. -->
+<script src="https://unpkg.com/xlogin"></script>
+
+<!-- Panes — bespoke Contacts grid first, then schema-driven. -->
+<script type="module" data-pane src="./contacts-view-pane.js"></script>
+<script type="module" data-pane src="https://solid-ui.github.io/ui-pane.js"></script>
+<script type="module" data-pane src="https://losos.org/panes/schema-pane.js"></script>
+<script type="module" data-pane src="https://solid-panes.github.io/schema-view.js"></script>
+<script type="module" data-pane src="https://losos.org/panes/source-pane.js"></script>
+
+<div id="losos"></div>
+
+<!-- Boot: autoSchema patches $schema, then shell -->
+<script type="module">
+  import { autoSchema } from 'https://solid-panes.github.io/auto-schema.js'
+  const result = await autoSchema()
+  console.log('[contacts] autoSchema patched', result.patched, 'island(s),', result.skipped, 'skipped')
+  await import('https://losos.org/losos/shell.js')
+</script>
+
+</body>
+</html>

@@ -10,6 +10,17 @@
     "status": "stable",
     "manifest": "/bookmark/app.json"
   },
+  "contacts": {
+    "name": "Contacts",
+    "description": "An address book — collection of contacts as a card grid. Bespoke Contacts view (avatar grid with name + nick/email) plus Inline edit, Edit, View, Source — all schema-driven from urn:solid:AddressBook.",
+    "entry": "/contacts/index.html",
+    "types": [
+      "urn:solid:AddressBook"
+    ],
+    "icon": "📒",
+    "status": "stable",
+    "manifest": "/contacts/app.json"
+  },
   "feed": {
     "name": "Feed",
     "description": "A fediverse-style timeline. Renders an OrderedCollection of Notes as cards with author chips, relative timestamps, content warnings, and hashtags. Companion to the Profile app.",

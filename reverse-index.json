@@ -2,6 +2,9 @@
   "urn:solid:Bookmark": [
     "/bookmark/"
   ],
+  "urn:solid:AddressBook": [
+    "/contacts/"
+  ],
   "urn:solid:OrderedCollection": [
     "/feed/"
   ],
