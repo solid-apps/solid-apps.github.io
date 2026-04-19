@@ -1,0 +1,10 @@
+{
+  "name": "Bookmark",
+  "description": "A saved web reference. Bespoke card view (favicon, title link, description, tag pills) plus Inline edit, Edit, View, Source — all schema-driven from urn:solid:Bookmark.",
+  "entry": "./index.html",
+  "types": ["urn:solid:Bookmark"],
+  "icon": "\ud83d\udd16",
+  "author": "Melvin Carvalho",
+  "status": "stable",
+  "added": "2026-04-19"
+}

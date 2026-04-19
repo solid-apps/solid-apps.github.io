@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bookmark — solid-apps</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #fafaf8; }
+  #losos { max-width: 100% !important; }
+  #losos > div { max-width: 100% !important; width: 100% !important; }
+</style>
+</head>
+<body>
+
+<!-- Sample data: a bookmark of solidproject.org, attributed to TimBL.
+     The natural self-referential demo. -->
+<script type="application/ld+json">
+{
+  "@context": { "@vocab": "urn:solid:" },
+  "@id": "#this",
+  "@type": "Bookmark",
+  "title": "Solid Project",
+  "recalls": "https://solidproject.org/",
+  "description": "Solid is a specification that lets people store their data securely in decentralized data stores called Pods. Pods are like secure personal web servers for data.",
+  "hasTopic": ["solid", "decentralization", "rdf", "linked-data"],
+  "created": "2026-04-19T12:00:00Z",
+  "attributedTo": "https://www.w3.org/People/Berners-Lee/card#i"
+}
+</script>
+
+<!-- Login: Nostr + Solid in one tag. -->
+<script src="https://unpkg.com/xlogin"></script>
+
+<!-- Panes — bespoke Bookmark view first, then schema-driven. -->
+<script type="module" data-pane src="./bookmark-view-pane.js"></script>
+<script type="module" data-pane src="https://solid-ui.github.io/ui-pane.js"></script>
+<script type="module" data-pane src="https://losos.org/panes/schema-pane.js"></script>
+<script type="module" data-pane src="https://solid-panes.github.io/schema-view.js"></script>
+<script type="module" data-pane src="https://losos.org/panes/source-pane.js"></script>
+
+<div id="losos"></div>
+
+<!-- Boot: autoSchema patches $schema, then shell -->
+<script type="module">
+  import { autoSchema } from 'https://solid-panes.github.io/auto-schema.js'
+  const result = await autoSchema()
+  console.log('[bookmark] autoSchema patched', result.patched, 'island(s),', result.skipped, 'skipped')
+  await import('https://losos.org/losos/shell.js')
+</script>
+
+</body>
+</html>

@@ -1,4 +1,7 @@
 {
+  "urn:solid:Bookmark": [
+    "/bookmark/"
+  ],
   "urn:solid:OrderedCollection": [
     "/feed/"
   ],

@@ -1,4 +1,15 @@
 {
+  "bookmark": {
+    "name": "Bookmark",
+    "description": "A saved web reference. Bespoke card view (favicon, title link, description, tag pills) plus Inline edit, Edit, View, Source — all schema-driven from urn:solid:Bookmark.",
+    "entry": "/bookmark/index.html",
+    "types": [
+      "urn:solid:Bookmark"
+    ],
+    "icon": "🔖",
+    "status": "stable",
+    "manifest": "/bookmark/app.json"
+  },
   "feed": {
     "name": "Feed",
     "description": "A fediverse-style timeline. Renders an OrderedCollection of Notes as cards with author chips, relative timestamps, content warnings, and hashtags. Companion to the Profile app.",
