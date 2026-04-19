@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPA — solid-preact 04 (login)</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  :root {
+    --bg: #f5f5f9;
+    --text: #222;
+    --muted: #888;
+    --card: #fff;
+    --border: #e8e8ee;
+    --shadow: 0 1px 2px rgba(0,0,0,.03);
+    --rail-bg: #1e1b2e;
+    --rail-text: #e9e8f3;
+    --rail-muted: #c9c6dc;
+    --rail-hover: #2a2640;
+  }
+  html[data-theme="dark"] {
+    --bg: #15131f;
+    --text: #e9e8f3;
+    --muted: #8d8aa4;
+    --card: #1e1b2e;
+    --border: #2a2640;
+    --shadow: 0 1px 2px rgba(0,0,0,.35);
+    --rail-bg: #0f0d18;
+    --rail-muted: #8d8aa4;
+    --rail-hover: #1e1b2e;
+  }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg); color: var(--text);
+    transition: background .2s, color .2s;
+  }
+
+  /* Shell */
+  .shell {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+  }
+  .rail {
+    background: var(--rail-bg);
+    color: var(--rail-text);
+    padding: 28px 18px;
+    border-right: 1px solid rgba(0,0,0,.4);
+    position: sticky; top: 0; align-self: start; min-height: 100vh;
+  }
+  .brand {
+    font: 700 18px/1 'Inter', sans-serif;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .brand .logo {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #fff;
+  }
+  .nav { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .nav a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 8px;
+    color: var(--rail-muted); text-decoration: none;
+    font-size: 14px; font-weight: 500;
+    transition: background .14s, color .14s;
+  }
+  .nav a:hover { background: var(--rail-hover); color: #fff; }
+  .nav a.active { background: linear-gradient(135deg, #7c3aed, #6366f1); color: #fff; }
+  .nav .ic { font-size: 16px; }
+
+  main {
+    padding: 40px 32px 80px;
+    max-width: 1060px;
+    width: 100%;
+  }
+
+  @media (max-width: 760px) {
+    .shell { grid-template-columns: 1fr; }
+    .rail { position: static; min-height: 0; padding: 16px 20px; display: flex; align-items: center; gap: 20px; }
+    .brand { margin-bottom: 0; }
+    .nav { flex-direction: row; gap: 4px; flex: 1; }
+    .nav .ic { display: none; }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+  }
+  .card + .card { margin-top: 18px; }
+
+  /* Two-column grid for Profile view */
+  .two-col {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 18px; align-items: start;
+  }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* Profile bits */
+  .hero { display: flex; gap: 22px; align-items: flex-start; }
+  .photo, .photo-fallback { width: 120px; height: 120px; border-radius: 16px; flex: 0 0 auto; }
+  .photo { object-fit: cover; background: #eef; }
+  .photo-fallback {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff; font: 600 52px/120px Georgia, serif;
+    text-align: center;
+  }
+  .name { font: 700 26px/1.2 'Inter', sans-serif; color: #1a1a1a; letter-spacing: -0.3px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .pronoun { font: 400 14px/1; color: #6366f1; }
+  .facts { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; font-size: 14px; color: #444; }
+  @media (max-width: 600px) { .facts { grid-template-columns: 1fr; } }
+  .fact { display: flex; align-items: center; gap: 8px; }
+  .fact .ic { opacity: .55; }
+  .fact a { color: inherit; text-decoration: none; }
+  .fact a:hover { color: #6366f1; }
+
+  .section-title { font: 700 17px/1.2 'Inter', sans-serif; color: #1a1a1a; margin-bottom: 12px; }
+  .prose { font: 400 15px/1.65 Georgia, serif; color: #333; }
+  .side-title { font: 700 15px/1 'Inter', sans-serif; color: #1a1a1a; margin-bottom: 12px; }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill { padding: 3px 11px; border-radius: 999px; background: #eef0fe; color: #4338ca; font-size: 13px; font-weight: 500; }
+  .list-plain { list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #333; }
+
+  /* Contacts grid */
+  .page-title { font: italic 400 36px/1.1 Georgia, serif; color: #1a1a1a; letter-spacing: -0.6px; margin-bottom: 4px; }
+  .page-sub { font: 400 14px/1.5 'Inter', -apple-system, sans-serif; color: #888; margin-bottom: 8px; }
+  .page-count { font: 600 11px/1 'Inter'; letter-spacing: .12em; text-transform: uppercase; color: #999; margin-bottom: 22px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .contact-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; display: flex; gap: 12px; align-items: center;
+    text-decoration: none; color: inherit; transition: transform .16s, border-color .16s, box-shadow .16s;
+  }
+  .contact-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.06); border-color: #6366f1; }
+  .avatar, .avatar-fb { width: 48px; height: 48px; border-radius: 50%; flex: 0 0 auto; }
+  .avatar { object-fit: cover; }
+  .avatar-fb {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff; font: 600 19px/48px Georgia, serif;
+    text-align: center;
+  }
+  .c-name { font: 600 15px/1.2 'Inter'; color: #1a1a1a; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c-sub { font: 400 12.5px/1.4 'Inter'; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Calendar card */
+  .ev-card {
+    display: flex; gap: 24px; align-items: flex-start;
+  }
+  .ev-date { flex: 0 0 auto; width: 88px; border: 1px solid #e8e8ee; border-radius: 12px; overflow: hidden; text-align: center; }
+  .ev-month { background: #ef4444; color: #fff; font: 600 12px/1 'Inter'; padding: 7px; letter-spacing: .18em; text-transform: uppercase; }
+  .ev-day { font: 500 40px/1 Georgia, serif; color: #1a1a1a; padding: 14px 0; background: #fafaf8; }
+  .ev-meta { flex: 1; min-width: 0; }
+  .ev-name { font: 500 24px/1.2 Georgia, serif; color: #1a1a1a; letter-spacing: -0.3px; margin-bottom: 6px; }
+  .ev-when { font: 500 13px/1.4 'Inter'; color: #666; margin-bottom: 16px; }
+  .ev-summary { font: 400 15px/1.6 Georgia, serif; color: #444; margin-bottom: 16px; }
+  .ev-row { display: flex; gap: 8px; align-items: center; padding-top: 12px; margin-top: 12px; border-top: 1px solid #e8e8ee; font: 400 13px/1.4 'Inter'; color: #666; }
+  .ev-row + .ev-row { border-top: none; padding-top: 0; margin-top: 5px; }
+  .ev-row a { color: #1a5276; text-decoration: none; }
+  .ev-row a:hover { color: #6366f1; }
+  .ev-row .ic { opacity: 0.6; }
+
+  .footer-tag {
+    margin-top: 28px; text-align: center;
+    font: 500 11px/1.4 ui-monospace, monospace;
+    color: #888; letter-spacing: 0.05em;
+  }
+  .footer-tag code { padding: 2px 7px; border-radius: 4px; background: #eef0fe; color: #4338ca; }
+
+  /* Settings view */
+  .settings-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0; gap: 16px;
+  }
+  .settings-row + .settings-row { border-top: 1px solid var(--border); }
+  .settings-label { font: 500 14px/1.4 'Inter'; color: var(--text); }
+  .settings-help  { font: 400 12.5px/1.4 'Inter'; color: var(--muted); margin-top: 2px; }
+  .seg {
+    display: inline-flex; padding: 3px; border-radius: 999px;
+    background: var(--bg); border: 1px solid var(--border);
+  }
+  .seg button {
+    padding: 6px 14px; border: 0; background: transparent;
+    font: 500 13px/1 'Inter'; color: var(--muted);
+    border-radius: 999px; cursor: pointer;
+  }
+  .seg button.on { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .settings-input {
+    padding: 8px 12px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+    font: 400 13px/1.4 ui-monospace, monospace;
+    width: 320px; max-width: 60%; outline: none;
+  }
+  .settings-input:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,.18); }
+  .island-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 0; font: 400 13px/1.4 ui-monospace, monospace;
+    color: var(--muted);
+  }
+  .island-row + .island-row { border-top: 1px solid var(--border); }
+  .island-badge { padding: 2px 9px; border-radius: 6px; background: #eef0fe; color: #4338ca; font-weight: 600; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<!-- One data island per view. Each is typed so consumers can match by @type
+     the same way LOSOS panes do. -->
+<script type="application/ld+json" data-view="profile">
+{
+  "@context": { "@vocab": "urn:solid:" },
+  "@id": "#me",
+  "@type": "Person",
+  "name": "Sir Tim Berners-Lee",
+  "nick": "timbl",
+  "pronouns": "he/him",
+  "email": "timbl@w3.org",
+  "phone": "+1 617 000 0000",
+  "homepage": "https://www.w3.org/People/Berners-Lee/",
+  "img": "https://www.w3.org/People/Berners-Lee/Press/stock-photos/tim-berners-lee-inrupt-2024.jpg",
+  "address": "Cambridge, MA, United States",
+  "bio": "Inventor of the World Wide Web. Director of the World Wide Web Consortium. Co-founder of Inrupt and the Solid project.",
+  "skills": ["Web Architecture", "RDF", "Linked Data", "HTTP", "Standards"],
+  "languages": ["English", "French"]
+}
+</script>
+
+<script type="application/ld+json" data-view="contacts">
+{
+  "@context": { "@vocab": "urn:solid:" },
+  "@id": "#contacts",
+  "@type": "AddressBook",
+  "title": "Web Developers",
+  "description": "A few people working on the web.",
+  "hasMember": [
+    { "@id": "https://www.w3.org/People/Berners-Lee/card#i", "@type": "Person", "name": "Sir Tim Berners-Lee", "nick": "timbl", "img": "https://www.w3.org/People/Berners-Lee/Press/stock-photos/tim-berners-lee-inrupt-2024.jpg" },
+    { "@id": "https://melvincarvalho.com/#me", "@type": "Person", "name": "Melvin Carvalho", "nick": "melvincarvalho", "homepage": "https://melvincarvalho.com/" },
+    { "@id": "https://ruben.verborgh.org/profile/#me", "@type": "Person", "name": "Ruben Verborgh", "nick": "rubenverborgh", "homepage": "https://ruben.verborgh.org/" }
+  ]
+}
+</script>
+
+<script type="application/ld+json" data-view="calendar">
+{
+  "@context": { "@vocab": "urn:solid:" },
+  "@id": "#meeting",
+  "@type": "Event",
+  "name": "Solid Community Group call",
+  "summary": "Bi-weekly W3C Solid CG sync — agenda, demos, and open issues. Open to anyone.",
+  "startTime": "2026-04-22T15:00:00Z",
+  "endTime": "2026-04-22T16:00:00Z",
+  "location": "https://meet.jit.si/solid",
+  "attributedTo": "https://www.w3.org/community/solid/"
+}
+</script>
+
+<!-- xlogin: mounts its own floating Login/Sign in button in the bottom-right
+     and exposes window.xlogin.{type,id,authFetch} + document events
+     'xlogin' / 'xlogout'. -->
+<script src="https://unpkg.com/xlogin"></script>
+
+<div id="app"></div>
+
+<script type="module">
+import { h, render } from 'https://esm.sh/preact@10'
+import { useState, useEffect } from 'https://esm.sh/preact@10/hooks'
+import htm from 'https://esm.sh/htm@3'
+
+const html = htm.bind(h)
+
+// --- data access -----------------------------------------------------------
+
+function readIsland(view) {
+  const el = document.querySelector(`script[data-view="${view}"]`)
+  try { return JSON.parse(el.textContent) } catch { return null }
+}
+
+// --- xlogin integration ----------------------------------------------------
+// Listens for 'xlogin'/'xlogout' events and exposes the current identity.
+
+function useXlogin() {
+  const [identity, setIdentity] = useState(() =>
+    window.xlogin && window.xlogin.id ? { type: window.xlogin.type, id: window.xlogin.id } : null
+  )
+  useEffect(() => {
+    const onIn  = (e) => setIdentity({ type: e.detail.type, id: e.detail.id })
+    const onOut = () => setIdentity(null)
+    document.addEventListener('xlogin',  onIn)
+    document.addEventListener('xlogout', onOut)
+    // Late-load: xlogin script may attach window.xlogin after our first render.
+    const t = setInterval(() => {
+      if (window.xlogin && window.xlogin.id && !identity)
+        setIdentity({ type: window.xlogin.type, id: window.xlogin.id })
+    }, 500)
+    return () => { document.removeEventListener('xlogin', onIn); document.removeEventListener('xlogout', onOut); clearInterval(t) }
+  }, [])
+  return identity
+}
+
+// Fetch a Solid WebID document as JSON-LD. Most Solid pods serve Turtle by
+// default; we rely on content negotiation via Accept: application/ld+json.
+// Pods that don't support JSON-LD output will fail here — that's a finding,
+// not a bug; stage 5 or later may introduce a lightweight Turtle parser.
+// Normalize a JSON-LD subject against common name/contact predicates so our
+// UI (which expects bare keys like `name`, `email`, `img`) can render it.
+// Handles both compact and expanded IRIs for foaf/vcard.
+const PREDICATES = {
+  name:     ['name', 'foaf:name', 'http://xmlns.com/foaf/0.1/name', 'vcard:fn', 'http://www.w3.org/2006/vcard/ns#fn'],
+  nick:     ['nick', 'foaf:nick', 'http://xmlns.com/foaf/0.1/nick'],
+  email:    ['email', 'foaf:mbox', 'http://xmlns.com/foaf/0.1/mbox', 'vcard:hasEmail', 'http://www.w3.org/2006/vcard/ns#hasEmail'],
+  homepage: ['homepage', 'foaf:homepage', 'http://xmlns.com/foaf/0.1/homepage', 'vcard:hasURL', 'http://www.w3.org/2006/vcard/ns#hasURL'],
+  img:      ['img', 'foaf:img', 'http://xmlns.com/foaf/0.1/img', 'foaf:depiction', 'http://xmlns.com/foaf/0.1/depiction', 'vcard:hasPhoto', 'http://www.w3.org/2006/vcard/ns#hasPhoto'],
+}
+function valueOf(v) {
+  if (!v) return null
+  if (typeof v === 'string') return v
+  if (Array.isArray(v)) return v.length ? valueOf(v[0]) : null
+  return v['@id'] || v['@value'] || null
+}
+function pickValue(obj, preds) {
+  for (const p of preds) if (obj[p] != null) { const v = valueOf(obj[p]); if (v) return v }
+  return null
+}
+function normalizeProfile(jsonld) {
+  const out = { '@id': jsonld['@id'], '@type': jsonld['@type'] }
+  for (const [field, preds] of Object.entries(PREDICATES)) {
+    const v = pickValue(jsonld, preds)
+    if (v) out[field] = field === 'email' ? v.replace(/^mailto:/, '') : v
+  }
+  return out
+}
+
+async function fetchWebidProfile(webid) {
+  const url = webid.replace(/#.*$/, '')  // strip fragment
+  const fetcher = (window.xlogin && window.xlogin.authFetch) || fetch
+  const res = await fetcher(url, { headers: { Accept: 'application/ld+json' } })
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  const ct = res.headers.get('content-type') || ''
+  if (!ct.includes('ld+json') && !ct.includes('application/json'))
+    throw new Error(`pod returned ${ct || 'unknown type'}; need application/ld+json (Turtle support = later stage)`)
+  const doc = await res.json()
+  // JSON-LD profiles vary: could be a single object, a @graph array, or a
+  // framed doc. Grab the subject matching the webid's fragment, else first.
+  const frag = webid.includes('#') ? webid.split('#')[1] : null
+  const graph = Array.isArray(doc['@graph']) ? doc['@graph'] : (Array.isArray(doc) ? doc : [doc])
+  const match = frag ? graph.find(n => (n['@id'] || '').endsWith('#' + frag)) : graph[0]
+  return normalizeProfile(match || graph[0])
+}
+
+function useProfileFor(webid) {
+  const [state, setState] = useState({ loading: false, error: null, data: null })
+  useEffect(() => {
+    if (!webid) { setState({ loading: false, error: null, data: null }); return }
+    let cancelled = false
+    setState({ loading: true, error: null, data: null })
+    fetchWebidProfile(webid)
+      .then(data => { if (!cancelled) setState({ loading: false, error: null, data }) })
+      .catch(err => { if (!cancelled) setState({ loading: false, error: err.message, data: null }) })
+    return () => { cancelled = true }
+  }, [webid])
+  return state
+}
+
+// --- routing ---------------------------------------------------------------
+
+function useHashRoute(fallback) {
+  const parse = () => (window.location.hash || '').replace(/^#\/?/, '') || fallback
+  const [route, setRoute] = useState(parse)
+  useEffect(() => {
+    const onChange = () => setRoute(parse())
+    window.addEventListener('hashchange', onChange)
+    return () => window.removeEventListener('hashchange', onChange)
+  }, [])
+  return route
+}
+
+// --- view: Profile --------------------------------------------------------
+
+const niceLink = (u) => (u || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
+const initial  = (s) => (s || '?').trim().split(/\s+/).pop().charAt(0).toUpperCase()
+
+function ProfileView({ identity }) {
+  const island = readIsland('profile') || {}
+  const webid = identity?.type === 'solid' ? identity.id : null
+  const fetched = useProfileFor(webid)
+
+  // Merge strategy: start from embedded island as a baseline, overlay fetched
+  // values. That way UI fields the pod doesn't provide (bio, skills, etc.)
+  // don't vanish — they just remain at sample values for the demo.
+  const data = fetched.data ? { ...island, ...fetched.data } : island
+  const { name, nick, pronouns, address, email, phone, homepage, img, bio, skills = [], languages = [] } = data
+  const source = fetched.data ? 'pod' : (fetched.loading ? 'loading' : (fetched.error ? 'error' : 'sample'))
+  return html`
+    <div>
+    <div style=${{ marginBottom: '14px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '12px', color: 'var(--muted)' }}>
+      ${source === 'pod'     && html`<span class="island-badge" style=${{ background: '#d1fae5', color: '#065f46' }}>live</span><span>Fetched from <code>${webid}</code></span>`}
+      ${source === 'loading' && html`<span class="island-badge">…</span><span>Fetching <code>${webid}</code></span>`}
+      ${source === 'error'   && html`<span class="island-badge" style=${{ background: '#fee2e2', color: '#991b1b' }}>error</span><span>${fetched.error} — falling back to sample</span>`}
+      ${source === 'sample'  && html`<span class="island-badge" style=${{ background: '#fef3c7', color: '#92400e' }}>sample</span><span>Sign in via the login button to load your WebID</span>`}
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="card">
+          <div class="hero">
+            ${img
+              ? html`<img class="photo" src=${img} alt=${name} onerror=${(e) => { const f = document.createElement('div'); f.className = 'photo-fallback'; f.textContent = initial(name); e.target.replaceWith(f) }} />`
+              : html`<div class="photo-fallback">${initial(name)}</div>`}
+            <div>
+              <h1 class="name">
+                <span>${name}</span>
+                ${pronouns && html`<span class="pronoun">(${pronouns})</span>`}
+              </h1>
+              <div class="facts">
+                ${address  && html`<div class="fact"><span class="ic">\u{1F4CD}</span><span>${address}</span></div>`}
+                ${phone    && html`<div class="fact"><span class="ic">\u{260E}\uFE0F</span><a href="tel:${phone.replace(/\s+/g,'')}">${phone}</a></div>`}
+                ${email    && html`<div class="fact"><span class="ic">\u{2709}\uFE0F</span><a href="mailto:${email}">${email}</a></div>`}
+                ${homepage && html`<div class="fact"><span class="ic">\u{1F310}</span><a href=${homepage} target="_blank" rel="noopener">${niceLink(homepage)}</a></div>`}
+              </div>
+            </div>
+          </div>
+        </div>
+        ${bio && html`
+          <div class="card">
+            <h2 class="section-title">Bio</h2>
+            <p class="prose">${bio}</p>
+          </div>`}
+      </div>
+      <div>
+        ${skills.length > 0 && html`
+          <div class="card">
+            <h3 class="side-title">Skills</h3>
+            <div class="pills">${skills.map(s => html`<span class="pill">${s}</span>`)}</div>
+          </div>`}
+        ${languages.length > 0 && html`
+          <div class="card">
+            <h3 class="side-title">Languages</h3>
+            <ul class="list-plain">${languages.map(l => html`<li>${l}</li>`)}</ul>
+          </div>`}
+      </div>
+    </div>
+    </div>
+  `
+}
+
+// --- view: Contacts --------------------------------------------------------
+
+const niceHost = (u) => { try { return new URL(u).host.replace(/^www\./, '') } catch { return u } }
+
+function ContactsView() {
+  const data = readIsland('contacts') || {}
+  const members = (Array.isArray(data.hasMember) ? data.hasMember : []).map(m => {
+    if (typeof m === 'string') return { id: m }
+    return { id: m['@id'], name: m.name, nick: m.nick, email: m.email, img: m.img, homepage: m.homepage }
+  })
+  const displayName = (m) => m.name || m.nick || (m.id ? niceHost(m.id) : 'Unknown')
+
+  return html`
+    <div>
+      <h1 class="page-title">${data.title || 'Contacts'}</h1>
+      ${data.description && html`<p class="page-sub">${data.description}</p>`}
+      <div class="page-count">${members.length} ${members.length === 1 ? 'contact' : 'contacts'}</div>
+      <div class="grid">
+        ${members.map(m => {
+          const n = displayName(m)
+          const sub = m.nick ? '@' + m.nick : (m.email || (m.id ? niceHost(m.id) : ''))
+          return html`
+            <a class="contact-card" href=${m.id || m.homepage || '#'} target="_blank" rel="noopener">
+              ${m.img
+                ? html`<img class="avatar" src=${m.img} alt=${n} />`
+                : html`<div class="avatar-fb">${initial(n)}</div>`}
+              <div style=${{ minWidth: 0, flex: 1 }}>
+                <div class="c-name">${n}</div>
+                ${sub && html`<div class="c-sub">${sub}</div>`}
+              </div>
+            </a>
+          `
+        })}
+      </div>
+    </div>
+  `
+}
+
+// --- view: Calendar --------------------------------------------------------
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+
+function partsOf(iso) {
+  if (!iso) return null
+  const d = new Date(iso)
+  if (isNaN(d)) return null
+  return { month: MONTHS[d.getMonth()], day: d.getDate(),
+    weekday: d.toLocaleDateString(undefined, { weekday: 'long' }),
+    time: d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) }
+}
+
+function CalendarView() {
+  const data = readIsland('calendar') || {}
+  const { name, summary } = data
+  const start = partsOf(data.startTime), end = partsOf(data.endTime)
+  const location = (typeof data.location === 'object' ? data.location['@id'] : data.location) || ''
+  const attributedTo = typeof data.attributedTo === 'string' ? data.attributedTo : data.attributedTo?.['@id']
+  const range = start && end && start.time !== end.time ? `${start.time} \u2013 ${end.time}` : start?.time
+  const when = start ? `${start.weekday}${range ? ' \u00b7 ' + range : ''}` : null
+  const isUrl = (s) => /^https?:\/\//.test(s)
+
+  return html`
+    <div class="card">
+      <div class="ev-card">
+        ${start ? html`
+          <div class="ev-date">
+            <div class="ev-month">${start.month}</div>
+            <div class="ev-day">${start.day}</div>
+          </div>
+        ` : html`<div class="ev-date"><div class="ev-month">—</div><div class="ev-day">?</div></div>`}
+        <div class="ev-meta">
+          <h1 class="ev-name">${name || 'Untitled Event'}</h1>
+          ${when && html`<div class="ev-when">${when}</div>`}
+          ${summary && html`<p class="ev-summary">${summary}</p>`}
+          ${location && html`
+            <div class="ev-row">
+              <span class="ic">\u{1F4CD}</span>
+              ${isUrl(location)
+                ? html`<a href=${location} target="_blank" rel="noopener">${niceHost(location)}</a>`
+                : html`<span>${location}</span>`}
+            </div>`}
+          ${attributedTo && html`
+            <div class="ev-row">
+              <span class="ic">\u{1F464}</span>
+              ${isUrl(attributedTo)
+                ? html`<a href=${attributedTo} target="_blank" rel="noopener">${niceHost(attributedTo)}</a>`
+                : html`<span>${attributedTo}</span>`}
+            </div>`}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+// --- view: Settings --------------------------------------------------------
+
+const THEME_KEY = 'solid-preact.theme'
+const WEBID_KEY = 'solid-preact.webid'
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme
+}
+
+// Restore on load before any render so there's no light→dark flash.
+applyTheme(localStorage.getItem(THEME_KEY) || 'light')
+
+function SettingsView({ identity }) {
+  const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || 'light')
+  const [webid, setWebid] = useState(() => localStorage.getItem(WEBID_KEY) || '')
+
+  useEffect(() => { localStorage.setItem(THEME_KEY, theme); applyTheme(theme) }, [theme])
+  useEffect(() => { if (webid) localStorage.setItem(WEBID_KEY, webid); else localStorage.removeItem(WEBID_KEY) }, [webid])
+
+  const islands = Array.from(document.querySelectorAll('script[type="application/ld+json"][data-view]')).map(el => {
+    let type = '?', id = '?', count = 0
+    try { const d = JSON.parse(el.textContent); type = d['@type'] || '?'; id = d['@id'] || '?'; count = Object.keys(d).filter(k => !k.startsWith('@')).length } catch {}
+    return { view: el.dataset.view, type, id, count }
+  })
+
+  return html`
+    <div>
+      <h1 class="page-title">Settings</h1>
+      <p class="page-sub">Appearance, identity, and the data islands this SPA has loaded.</p>
+
+      <div class="card" style=${{ marginTop: '18px' }}>
+        <h3 class="side-title">Appearance</h3>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Theme</div>
+            <div class="settings-help">Saved to <code>localStorage</code>. Applied before render so there's no flash.</div>
+          </div>
+          <div class="seg">
+            <button class=${theme === 'light' ? 'on' : ''} onClick=${() => setTheme('light')}>\u2600\uFE0F Light</button>
+            <button class=${theme === 'dark'  ? 'on' : ''} onClick=${() => setTheme('dark')}>\u{1F319} Dark</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="side-title">Identity</h3>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Live login state</div>
+            <div class="settings-help">Via <code>window.xlogin</code>. Updates reactively on <code>xlogin</code> / <code>xlogout</code> events.</div>
+          </div>
+          <div style=${{ textAlign: 'right', fontSize: '13px', lineHeight: 1.5 }}>
+            ${identity
+              ? html`<div><strong style=${{ color: 'var(--text)' }}>${identity.type}</strong></div><div style=${{ fontFamily: 'ui-monospace, monospace', color: 'var(--muted)', wordBreak: 'break-all', maxWidth: '320px' }}>${identity.id}</div>`
+              : html`<span style=${{ color: 'var(--muted)' }}>not signed in</span>`}
+          </div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Saved WebID (fallback)</div>
+            <div class="settings-help">Used if no live login. Persisted to <code>localStorage</code>.</div>
+          </div>
+          <input class="settings-input" type="url" placeholder="https://you.example.org/profile/card#me" value=${webid} onInput=${(e) => setWebid(e.target.value)} />
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="side-title">Data islands</h3>
+        <div>
+          ${islands.map(isl => html`
+            <div class="island-row">
+              <span class="island-badge">${isl.view}</span>
+              <span><strong style=${{ color: 'var(--text)' }}>@type</strong>: ${isl.type}</span>
+              <span><strong style=${{ color: 'var(--text)' }}>@id</strong>: ${isl.id}</span>
+              <span style=${{ marginLeft: 'auto' }}>${isl.count} props</span>
+            </div>
+          `)}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+// --- shell -----------------------------------------------------------------
+
+const VIEWS = {
+  profile:  { label: 'Profile',  icon: '\u{1F464}', Component: ProfileView  },
+  contacts: { label: 'Contacts', icon: '\u{1F4D2}', Component: ContactsView },
+  calendar: { label: 'Calendar', icon: '\u{1F4C5}', Component: CalendarView },
+  settings: { label: 'Settings', icon: '\u{2699}\uFE0F', Component: SettingsView },
+}
+
+function IdentityChip({ identity }) {
+  if (!identity) return html`<div style=${{ fontSize: '12px', color: 'var(--rail-muted)', marginTop: '20px', lineHeight: 1.5 }}>Not signed in</div>`
+  const short = identity.id.length > 28 ? identity.id.slice(0, 26) + '…' : identity.id
+  return html`
+    <div style=${{ marginTop: '20px', padding: '10px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', fontSize: '12px', lineHeight: 1.5 }}>
+      <div style=${{ color: '#a5b4fc', fontWeight: 600, fontSize: '11px', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: '4px' }}>Signed in · ${identity.type}</div>
+      <div style=${{ color: 'var(--rail-text)', wordBreak: 'break-all' }}>${short}</div>
+    </div>`
+}
+
+function App() {
+  const route = useHashRoute('profile')
+  const identity = useXlogin()
+  const current = VIEWS[route] || VIEWS.profile
+  const ViewComponent = current.Component
+
+  return html`
+    <div class="shell">
+      <aside class="rail">
+        <div class="brand"><span class="logo">S</span><span>solid</span></div>
+        <ul class="nav">
+          ${Object.entries(VIEWS).map(([key, v]) => html`
+            <li>
+              <a href=${'#/' + key} class=${route === key ? 'active' : ''}>
+                <span class="ic">${v.icon}</span><span>${v.label}</span>
+              </a>
+            </li>
+          `)}
+        </ul>
+        <${IdentityChip} identity=${identity} />
+      </aside>
+      <main>
+        <${ViewComponent} identity=${identity} />
+        <div class="footer-tag">stage 04 \u2014 login via xlogin, fetch WebID as JSON-LD \u2014 sign in (bottom-right) to swap the sample profile for yours</div>
+      </main>
+    </div>
+  `
+}
+
+render(html`<${App} />`, document.getElementById('app'))
+</script>
+
+</body>
+</html>

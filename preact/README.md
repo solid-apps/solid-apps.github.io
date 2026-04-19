@@ -13,7 +13,7 @@ Each stage is a single self-contained HTML file (zero build). A stage graduates 
 | 01-hello | Minimal Preact render: mount a `<Profile>` component, read JSON-LD from a `<script type="application/ld+json">` island, display it. Inspired by the Pivot profile layout at sharon.pivot-test.solidproject.org. Static; no state, no edits. |
 | 02-inline-edit | `useState` for editable fields, debounced autosave that logs the would-be PUT body and writes back to the data island. Adds array editing (skills/languages pills with + add / × remove) — the thing ui-pane still defers. |
 | 03-routing | Hand-rolled `useHashRoute` hook, persistent left sidebar nav, three views (Profile / Contacts / Calendar) in one SPA. One data island per view, typed. Read-only — edit is stage 2's concern, not repeated here. |
-| 04-fetch | Load external WebIDs. |
+| 04-login | xlogin integration (Nostr/Solid). Listens for `xlogin`/`xlogout` events, shows the live identity in the sidebar, fetches the Solid WebID doc as JSON-LD after login, normalizes common foaf/vcard predicates, and overlays fetched values onto the sample island. Graceful fallback when the pod doesn't speak JSON-LD. |
 | 05+ | TBD — whatever the previous stages surface as the next limit. |
 
 ## Findings
