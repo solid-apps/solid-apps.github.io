@@ -1,0 +1,10 @@
+{
+  "name": "{{LABEL}}",
+  "description": "{{DESCRIPTION}}",
+  "entry": "./index.html",
+  "types": ["urn:solid:{{TYPE}}"],
+  "icon": "{{ICON}}",
+  "author": "Melvin Carvalho",
+  "status": "stable",
+  "added": "{{TODAY}}"
+}
