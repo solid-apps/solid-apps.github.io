@@ -11,7 +11,7 @@ Each stage is a single self-contained HTML file (zero build). A stage graduates 
 | Stage | Focus |
 |-------|-------|
 | 01-hello | Minimal Preact render: mount a `<Profile>` component, read JSON-LD from a `<script type="application/ld+json">` island, display it. Inspired by the Pivot profile layout at sharon.pivot-test.solidproject.org. Static; no state, no edits. |
-| 02-inline-edit | `useState` / signals; click a field to edit; debounced PUT on blur. |
+| 02-inline-edit | `useState` for editable fields, debounced autosave that logs the would-be PUT body and writes back to the data island. Adds array editing (skills/languages pills with + add / × remove) — the thing ui-pane still defers. |
 | 03-routing | Hash routes, multi-page SPA shell. |
 | 04-fetch | Load external WebIDs. |
 | 05+ | TBD — whatever the previous stages surface as the next limit. |
