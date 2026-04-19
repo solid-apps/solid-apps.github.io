@@ -7,7 +7,7 @@ const ROOT = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), ".."
 
 const RESERVED = new Set([
   "schema", "scripts", "node_modules", ".github", ".git", ".claude",
-  "assets", "vendor", "spec", "demo", "template"
+  "assets", "vendor", "spec", "demo", "template", "preact"
 ]);
 
 const isAppDir = (name) => {
