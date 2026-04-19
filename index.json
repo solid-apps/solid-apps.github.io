@@ -1,4 +1,16 @@
 {
+  "feed": {
+    "name": "Feed",
+    "description": "A fediverse-style timeline. Renders an OrderedCollection of Notes as cards with author chips, relative timestamps, content warnings, and hashtags. Companion to the Profile app.",
+    "entry": "/feed/index.html",
+    "types": [
+      "urn:solid:OrderedCollection",
+      "urn:solid:Note"
+    ],
+    "icon": "📜",
+    "status": "stable",
+    "manifest": "/feed/app.json"
+  },
   "profile": {
     "name": "Profile",
     "description": "Your card on the web. Beautiful schema-driven Person page with bespoke Profile view, schema-driven Edit, and Source. Open ?uri=<your-webid> to view any Solid profile.",

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feed — solid-apps</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #fafaf8; }
+  #losos { max-width: 100% !important; }
+  #losos > div { max-width: 100% !important; width: 100% !important; }
+</style>
+</head>
+<body>
+
+<!-- Sample feed: an OrderedCollection of Notes from a few well-known WebIDs.
+     attributedTo is inline (Person object) so the feed pane gets author info
+     without fetching. In a real pod-backed app, attributedTo would be just an
+     @id and the pane could choose to lazy-fetch + cache. -->
+<script type="application/ld+json">
+{
+  "@context": { "@vocab": "urn:solid:" },
+  "@id": "#this",
+  "@type": "OrderedCollection",
+  "title": "Public timeline",
+  "totalItems": 5,
+  "orderedItems": [
+    {
+      "@id": "#5",
+      "@type": "Note",
+      "attributedTo": {
+        "@id": "https://www.w3.org/People/Berners-Lee/card#i",
+        "name": "Sir Tim Berners-Lee",
+        "nick": "timbl",
+        "img": "https://www.w3.org/People/Berners-Lee/Press/stock-photos/tim-berners-lee-inrupt-2024.jpg"
+      },
+      "content": "The Web is for everyone. Solid puts data back in your pod, where you control it. Build apps that read and write to that pod, and the web becomes interoperable again.",
+      "published": "2026-04-19T16:32:00Z",
+      "tag": ["#solid", "#web"]
+    },
+    {
+      "@id": "#4",
+      "@type": "Note",
+      "attributedTo": {
+        "@id": "https://melvincarvalho.com/#me",
+        "name": "Melvin Carvalho",
+        "nick": "melvincarvalho"
+      },
+      "content": "Just shipped: LION + urn-solid + solid-schema + solid-panes + LOSOS + xlogin. Five layers, six repos, one Profile app. Open https://solid-apps.github.io/profile/ to see your card on the web.",
+      "published": "2026-04-19T15:10:00Z",
+      "tag": ["#solid", "#urn-solid", "#losos"]
+    },
+    {
+      "@id": "#3",
+      "@type": "Note",
+      "attributedTo": {
+        "@id": "https://ruben.verborgh.org/profile/#me",
+        "name": "Ruben Verborgh",
+        "nick": "rubenverborgh"
+      },
+      "content": "Decentralisation isn't a feature. It's a property of the network — emerging from many small, independent actors choosing the same protocols. Vocabulary is part of the protocol.",
+      "published": "2026-04-19T11:45:00Z"
+    },
+    {
+      "@id": "#2",
+      "@type": "Note",
+      "attributedTo": {
+        "@id": "https://alice.example.org/profile/card#me",
+        "name": "Alice",
+        "nick": "alice"
+      },
+      "summary": "spoilers for the urn:solid stack reveal",
+      "content": "I cannot believe what just happened — you can write JSON, get RDF for free, drop in a one-line login, and your app reads other apps' data through a shared registry. It just works.",
+      "published": "2026-04-19T09:18:00Z"
+    },
+    {
+      "@id": "#1",
+      "@type": "Note",
+      "attributedTo": {
+        "@id": "https://bob.example.org/profile/card#me",
+        "name": "Bob",
+        "nick": "bob"
+      },
+      "content": "Hello fediverse. First note from my pod.",
+      "published": "2026-04-18T22:01:00Z",
+      "tag": ["#firstpost"]
+    }
+  ]
+}
+</script>
+
+<!-- Login (Nostr + Solid). -->
+<script src="https://unpkg.com/xlogin"></script>
+
+<!-- Panes: Feed (custom) first, then Source. No schema-pane/schema-view here —
+     OrderedCollection isn't yet in solid-schema/solid-panes registries (could be added). -->
+<script type="module" data-pane src="./note-feed-pane.js"></script>
+<script type="module" data-pane src="https://losos.org/panes/source-pane.js"></script>
+
+<div id="losos"></div>
+
+<script type="module">
+  import { autoSchema } from 'https://solid-panes.github.io/auto-schema.js'
+  const result = await autoSchema()
+  console.log('[feed] autoSchema patched', result.patched, 'island(s),', result.skipped, 'skipped')
+  await import('https://losos.org/losos/shell.js')
+</script>
+
+</body>
+</html>

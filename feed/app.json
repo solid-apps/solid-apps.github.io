@@ -1,0 +1,10 @@
+{
+  "name": "Feed",
+  "description": "A fediverse-style timeline. Renders an OrderedCollection of Notes as cards with author chips, relative timestamps, content warnings, and hashtags. Companion to the Profile app.",
+  "entry": "./index.html",
+  "types": ["urn:solid:OrderedCollection", "urn:solid:Note"],
+  "icon": "\ud83d\udcdc",
+  "author": "Melvin Carvalho",
+  "status": "stable",
+  "added": "2026-04-19"
+}

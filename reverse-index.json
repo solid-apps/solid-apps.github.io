@@ -1,4 +1,10 @@
 {
+  "urn:solid:OrderedCollection": [
+    "/feed/"
+  ],
+  "urn:solid:Note": [
+    "/feed/"
+  ],
   "urn:solid:Person": [
     "/profile/"
   ],
