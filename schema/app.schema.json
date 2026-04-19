@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solid-apps.github.io/schema/app.schema.json",
+  "title": "solid-apps catalog manifest",
+  "description": "One app.json per application directory. Used to populate the catalog landing page and let LLMs/agents discover what apps exist and which urn:solid types each handles.",
+  "type": "object",
+  "required": ["name", "description", "entry", "types", "status", "added"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "description": "Display name shown in the catalog.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "description": {
+      "description": "One-sentence summary of what the app does.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280
+    },
+    "entry": {
+      "description": "Relative path to the app's HTML entry point (typically ./index.html).",
+      "type": "string"
+    },
+    "types": {
+      "description": "urn:solid: types this app reads, writes, or otherwise handles.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "pattern": "^urn:solid:[A-Za-z][A-Za-z0-9_-]*$" },
+      "uniqueItems": true
+    },
+    "screenshot": {
+      "description": "Relative or absolute URL of a screenshot for the catalog.",
+      "type": "string"
+    },
+    "icon": {
+      "description": "Single-character icon (typically emoji).",
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["stable", "experimental", "deprecated"]
+    },
+    "added": {
+      "type": "string",
+      "format": "date"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "source": {
+      "description": "URL of the app's source repository, if separate.",
+      "type": "string",
+      "format": "uri"
+    }
+  }
+}

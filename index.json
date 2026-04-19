@@ -1,0 +1,14 @@
+{
+  "todos": {
+    "name": "Todos",
+    "description": "A list of tasks. Built on LOSOS's bespoke todo-pane via the urn:solid:Tracker manifest.",
+    "entry": "/todos/index.html",
+    "types": [
+      "urn:solid:Tracker",
+      "urn:solid:Vtodo"
+    ],
+    "icon": "✅",
+    "status": "stable",
+    "manifest": "/todos/app.json"
+  }
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Todos — solid-apps</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body { font-family: Inter, -apple-system, sans-serif; background: #f5f5f7; }
+  #losos { max-width: 100% !important; }
+  #losos > div { max-width: 100% !important; width: 100% !important; }
+  .app-banner { background: #1a1a1a; color: #ddd; padding: 14px 24px; font: 13px/1.5 monospace; }
+  .app-banner a { color: #6366f1; }
+  .app-banner code { color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="app-banner">
+  <strong>solid-apps: Todos</strong> &middot;
+  data is a <code>urn:solid:Tracker</code> with inline Vtodos &middot;
+  routed via <a href="https://solid-panes.github.io/Tracker/">solid-panes Tracker manifest</a> to LOSOS's bespoke <code>todo-pane.js</code>
+</div>
+
+<!-- Inline Tracker data with @vocab default — no $schema needed for the bespoke pane -->
+<script type="application/ld+json">
+{
+  "@context": {
+    "@vocab": "urn:solid:",
+    "wf": "http://www.w3.org/2005/01/wf/flow#",
+    "ical": "http://www.w3.org/2002/12/cal/ical#",
+    "issue": "wf:issue",
+    "summary": "ical:summary",
+    "status": "ical:status",
+    "categories": "ical:categories",
+    "Tracker": "wf:Tracker",
+    "Vtodo": "ical:Vtodo"
+  },
+  "@id": "#this",
+  "@type": "Tracker",
+  "title": "Today",
+  "initialState": "NEEDS-ACTION",
+  "issue": [
+    {
+      "@id": "#1",
+      "@type": "Vtodo",
+      "summary": "Open this in a browser",
+      "status": "COMPLETED",
+      "modified": "2026-04-19T08:00:00Z"
+    },
+    {
+      "@id": "#2",
+      "@type": "Vtodo",
+      "summary": "Verify the bespoke todo-pane fires (not the generic schema-pane)",
+      "status": "IN-PROCESS",
+      "categories": "demo",
+      "modified": "2026-04-19T09:00:00Z"
+    },
+    {
+      "@id": "#3",
+      "@type": "Vtodo",
+      "summary": "Tell me how the cross-app interop demo should look next",
+      "status": "NEEDS-ACTION",
+      "modified": "2026-04-19T10:00:00Z"
+    }
+  ]
+}
+</script>
+
+<!-- Panes — todo-pane handles the Tracker, schema-view + source for individual Vtodos -->
+<script type="module" data-pane src="https://losos.org/panes/todo-pane.js"></script>
+<script type="module" data-pane src="https://losos.org/panes/schema-pane.js"></script>
+<script type="module" data-pane src="https://solid-panes.github.io/schema-view.js"></script>
+<script type="module" data-pane src="https://losos.org/panes/source-pane.js"></script>
+
+<div id="losos"></div>
+
+<!-- Boot: auto-schema patches $schema based on @type for the schema-driven panes; shell follows -->
+<script type="module">
+  import { autoSchema } from 'https://solid-panes.github.io/auto-schema.js'
+  const result = await autoSchema()
+  console.log('[todos] autoSchema patched', result.patched, 'island(s),', result.skipped, 'skipped')
+  await import('https://losos.org/losos/shell.js')
+</script>
+
+</body>
+</html>

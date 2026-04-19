@@ -1,0 +1,20 @@
+{
+  "name": "@solid-apps/registry",
+  "version": "0.0.1",
+  "description": "Catalog of LOSOS apps — each entry is a working application built on the urn-solid + solid-schema + solid-panes + LOSOS stack.",
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate.js",
+    "build": "node scripts/build.js"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.0",
+    "ajv-formats": "^3.0.1"
+  },
+  "license": "AGPL-3.0",
+  "homepage": "https://solid-apps.github.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/solid-apps/solid-apps.github.io.git"
+  }
+}

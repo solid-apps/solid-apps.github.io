@@ -1,0 +1,10 @@
+{
+  "name": "Todos",
+  "description": "A list of tasks. Built on LOSOS's bespoke todo-pane via the urn:solid:Tracker manifest.",
+  "entry": "./index.html",
+  "types": ["urn:solid:Tracker", "urn:solid:Vtodo"],
+  "icon": "\u2705",
+  "author": "Melvin Carvalho",
+  "status": "stable",
+  "added": "2026-04-19"
+}

@@ -1,0 +1,8 @@
+{
+  "urn:solid:Tracker": [
+    "/todos/"
+  ],
+  "urn:solid:Vtodo": [
+    "/todos/"
+  ]
+}

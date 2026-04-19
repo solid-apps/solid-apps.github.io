@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>solid-apps</title>
+<style>
+body { font-family: Georgia, serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #2c2c2c; background: #fafaf8; }
+header a { color: #888; text-decoration: none; margin-right: 1.2rem; }
+h1 { margin-bottom: 0.25rem; }
+.subtitle { color: #888; margin-top: 0; }
+ul { list-style: none; padding: 0; }
+li { background: #fff; border: 1px solid #e5e3de; border-radius: 6px; padding: 16px; margin: 0.75rem 0; }
+li a.title { color: #1a5276; text-decoration: none; font-weight: 600; font-size: 1.05em; }
+li .types { color: #888; font-family: monospace; font-size: 0.85em; margin-top: 6px; }
+li .icon { float: right; font-size: 1.5em; opacity: 0.7; }
+.urn { font-family: monospace; background: #f0efeb; padding: 0.1em 0.4em; border-radius: 3px; }
+</style>
+</head>
+<body>
+<header>
+  <a href="/">solid-apps</a>
+  <a href="/index.json">catalog</a>
+  <a href="/reverse-index.json">by type</a>
+  <a href="https://urn-solid.github.io/">urn-solid</a>
+  <a href="https://solid-schema.github.io/">solid-schema</a>
+  <a href="https://solid-panes.github.io/">solid-panes</a>
+</header>
+
+<h1>solid-apps</h1>
+<p class="subtitle">Working LOSOS applications, each built on the LION + urn-solid + solid-schema + solid-panes + LOSOS stack. Open any URL to use the app.</p>
+
+<h2>Apps</h2>
+<ul id="catalog">
+  <li><em>Loading…</em></li>
+</ul>
+
+<h2>What this is</h2>
+<p>Each app is a single-HTML-file LOSOS application that handles one or more <span class="urn">urn:solid:</span> types. Schema-driven where possible (form auto-generated from the type's JSON Schema), bespoke where warranted (e.g. Tracker uses LOSOS's native todo-pane for the list view).</p>
+
+<p>The whole stack visible at one click per app:</p>
+<ol>
+  <li><strong>LION</strong> — the data is just JSON-LD</li>
+  <li><strong>urn-solid</strong> — bare type names like <code>Tracker</code> default to <code>urn:solid:Tracker</code></li>
+  <li><strong>solid-schema</strong> — JSON Schema describes the shape</li>
+  <li><strong>solid-panes</strong> — manifest routes the type to the right pane</li>
+  <li><strong>LOSOS</strong> — runtime renders panes, syncs writes back to the pod</li>
+</ol>
+
+<footer style="margin-top: 3rem; color: #888; font-size: 0.85em;">
+  <p><a href="https://github.com/solid-apps/solid-apps.github.io">github.com/solid-apps/solid-apps.github.io</a></p>
+</footer>
+
+<script>
+(async () => {
+  const list = document.getElementById('catalog')
+  try {
+    const res = await fetch('/index.json')
+    const cat = await res.json()
+    const entries = Object.entries(cat)
+    list.innerHTML = ''
+    if (!entries.length) { list.innerHTML = '<li><em>No apps yet.</em></li>'; return }
+    for (const [slug, app] of entries) {
+      const li = document.createElement('li')
+      li.innerHTML = `
+        <span class="icon">${app.icon || ''}</span>
+        <a class="title" href="${app.entry}">${app.name}</a>
+        <div>${app.description}</div>
+        <div class="types">${app.types.map(t => `<span class="urn">${t}</span>`).join(' ')}</div>
+      `
+      list.appendChild(li)
+    }
+  } catch {
+    list.innerHTML = '<li><em>Failed to load catalog.</em></li>'
+  }
+})()
+</script>
+
+</body>
+</html>
