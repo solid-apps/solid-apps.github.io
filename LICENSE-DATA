@@ -1,0 +1,42 @@
+DATA LICENSE — CC0 1.0 Universal (Public Domain Dedication)
+============================================================
+
+The catalog metadata files in this repository are dedicated to the
+public domain under CC0 1.0 Universal. To the extent possible under
+law, Melvin Carvalho has waived all copyright and related or
+neighboring rights to these files. Anyone may copy, modify, distribute,
+and perform them, even for commercial purposes, all without asking
+permission.
+
+Full legal text: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+What this covers
+----------------
+
+CC0 applies to the solid-apps catalog metadata:
+
+  - <slug>/app.json              — each app's catalog manifest
+  - schema/app.schema.json       — meta-schema for app.json
+  - corpus.jsonl                 — generated: every manifest as one record per line
+  - index.json                   — generated: catalog
+  - reverse-index.json           — generated: urn:solid type → array of app slugs
+
+What this does NOT cover
+------------------------
+
+The applications themselves and the build code remain licensed under
+AGPL-3.0 (see LICENSE):
+
+  - <slug>/index.html            — app entry points
+  - <slug>/*-pane.js             — custom panes (e.g. profile-view-pane.js)
+  - scripts/*.js                 — validate + build pipeline
+  - top-level index.html         — catalog landing page
+
+Why
+---
+
+The catalog is a directory — knowing what apps exist and what types
+they handle should be friction-free for any other catalog or
+discovery tool to consume. The apps themselves carry copyleft so
+their *implementations* stay AGPL while the *fact of their
+existence* (and which urn:solid types they serve) is public domain.
