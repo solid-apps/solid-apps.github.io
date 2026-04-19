@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tasks — solid-preact 06</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  :root {
+    --bg: #f5f5f9; --text: #222; --muted: #888;
+    --card: #fff; --border: #e8e8ee; --shadow: 0 1px 2px rgba(0,0,0,.03);
+    --accent: #6366f1; --done: #10b981; --pending: #f59e0b; --danger: #ef4444;
+  }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .topbar {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 24px; border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font: 700 18px/1 'Inter'; }
+  .brand .logo { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #6366f1, #10b981); display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; }
+  .topbar .grow { flex: 1; }
+  .who {
+    font: 500 12.5px/1.4 'Inter'; color: var(--muted);
+    text-align: right;
+  }
+  .who code { color: var(--text); font-size: 12px; }
+
+  main { padding: 32px 24px 96px; max-width: 1280px; margin: 0 auto; }
+  h1.heading { font: italic 400 36px/1.1 Georgia, serif; color: var(--text); letter-spacing: -0.6px; margin-bottom: 6px; }
+  .sub { font: 400 14px/1.5 'Inter'; color: var(--muted); margin-bottom: 28px; }
+
+  .empty {
+    background: var(--card); border: 1px dashed var(--border); border-radius: 12px;
+    padding: 60px 20px; text-align: center; color: var(--muted);
+    font: 400 15px/1.5 'Inter';
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+  .col {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; display: flex; flex-direction: column;
+    box-shadow: var(--shadow);
+    min-height: 260px;
+  }
+  .col-head {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 0 4px 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+  }
+  .col-title { font: 700 16px/1 'Inter'; color: var(--text); }
+  .col-count { font: 600 11px/1 'Inter'; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .col-status { margin-left: auto; font: 500 11px/1 'Inter'; color: var(--muted); }
+  .col-status.saving { color: var(--pending); }
+  .col-status.saved  { color: var(--done); }
+  .col-status.error  { color: var(--danger); }
+
+  .issues { display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; }
+  .issue {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 8px;
+    border-radius: 8px;
+    transition: background .12s;
+    position: relative;
+  }
+  .issue:hover { background: rgba(99,102,241,.04); }
+  .issue.done .summary { color: var(--muted); text-decoration: line-through; }
+  .check {
+    width: 18px; height: 18px; border-radius: 4px;
+    border: 1.5px solid #c8c8d0; background: #fff;
+    flex: 0 0 auto; cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 12px; color: transparent; margin-top: 2px;
+    transition: all .12s;
+  }
+  .check:hover { border-color: var(--accent); }
+  .check.on { background: var(--done); border-color: var(--done); color: #fff; }
+  .summary {
+    flex: 1; min-width: 0; word-break: break-word;
+    cursor: text; padding: 1px 4px; margin: -1px -4px;
+    border-radius: 4px; font: 400 14px/1.4 'Inter';
+  }
+  .summary:hover { background: rgba(0,0,0,.03); }
+  .summary.editing { background: #fff; padding: 0; margin: 0; }
+  .summary input {
+    width: 100%; padding: 1px 4px;
+    border: 1px solid var(--accent); border-radius: 4px;
+    font: inherit; outline: none;
+    box-shadow: 0 0 0 2px rgba(99,102,241,.18);
+  }
+  .del {
+    opacity: 0; transition: opacity .12s, color .12s;
+    cursor: pointer; padding: 0 4px;
+    color: var(--muted); font-size: 16px; line-height: 1;
+    flex: 0 0 auto;
+  }
+  .issue:hover .del { opacity: 1; }
+  .del:hover { color: var(--danger); }
+
+  .add-row {
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+  .add-row input {
+    width: 100%; padding: 8px 10px;
+    border: 1px solid var(--border); border-radius: 8px;
+    font: 400 14px/1.4 'Inter'; outline: none;
+    background: var(--bg);
+  }
+  .add-row input:focus { border-color: var(--accent); background: var(--card); box-shadow: 0 0 0 2px rgba(99,102,241,.18); }
+
+  .footer-tag {
+    margin-top: 36px; text-align: center;
+    font: 500 11px/1.4 ui-monospace, monospace;
+    color: var(--muted); letter-spacing: 0.05em;
+  }
+  .footer-tag code { padding: 2px 7px; border-radius: 4px; background: #eef0fe; color: #4338ca; }
+
+  .err {
+    background: #fee2e2; color: #991b1b;
+    padding: 10px 14px; border-radius: 8px;
+    font: 400 13px/1.4 'Inter'; margin-bottom: 18px;
+  }
+</style>
+</head>
+<body>
+
+<script src="https://unpkg.com/xlogin"></script>
+
+<div id="app"></div>
+
+<script type="module">
+import { h, render } from 'https://esm.sh/preact@10'
+import { useState, useEffect, useCallback, useRef } from 'https://esm.sh/preact@10/hooks'
+import htm from 'https://esm.sh/htm@3'
+
+const html = htm.bind(h)
+
+// --- xlogin -----------------------------------------------------------------
+
+function useXlogin() {
+  const [identity, setIdentity] = useState(() =>
+    window.xlogin && window.xlogin.id ? { type: window.xlogin.type, id: window.xlogin.id } : null
+  )
+  useEffect(() => {
+    const onIn  = (e) => setIdentity({ type: e.detail.type, id: e.detail.id })
+    const onOut = () => setIdentity(null)
+    document.addEventListener('xlogin', onIn)
+    document.addEventListener('xlogout', onOut)
+    const t = setInterval(() => {
+      if (window.xlogin && window.xlogin.id && !identity) setIdentity({ type: window.xlogin.type, id: window.xlogin.id })
+    }, 500)
+    return () => { document.removeEventListener('xlogin', onIn); document.removeEventListener('xlogout', onOut); clearInterval(t) }
+  }, [])
+  return identity
+}
+
+// --- pod fetch + write ------------------------------------------------------
+
+const fetcher = () => (window.xlogin && window.xlogin.authFetch) || fetch
+const idOf = (v) => typeof v === 'string' ? v : (v && v['@id']) || null
+const TRACKER_CLASS = 'http://www.w3.org/2005/01/wf/flow#Tracker'
+
+async function fetchJsonLd(url) {
+  const r = await fetcher()(url, { headers: { Accept: 'application/ld+json' } })
+  if (!r.ok) throw new Error(`${r.status} ${r.statusText}`)
+  return r.json()
+}
+
+async function putJsonLd(url, body) {
+  const r = await fetcher()(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/ld+json' },
+    body: JSON.stringify(body, null, 2),
+  })
+  if (!r.ok) throw new Error(`PUT failed: ${r.status} ${r.statusText}`)
+  return r
+}
+
+async function discoverTrackerUrls(webid) {
+  const webidDoc = await fetchJsonLd(webid.replace(/#.*$/, ''))
+  const graph = Array.isArray(webidDoc['@graph']) ? webidDoc['@graph'] : (Array.isArray(webidDoc) ? webidDoc : [webidDoc])
+  const frag = webid.includes('#') ? webid.split('#')[1] : null
+  const me = (frag ? graph.find(n => (n['@id'] || '').endsWith('#' + frag)) : null) || graph[0]
+  const tiRef = me['solid:publicTypeIndex'] || me['http://www.w3.org/ns/solid/terms#publicTypeIndex']
+  const tiId = idOf(tiRef)
+  if (!tiId) throw new Error('no solid:publicTypeIndex on WebID')
+  const tiUrl = new URL(tiId, webid).href
+  const ti = await fetchJsonLd(tiUrl)
+
+  const nodes = []
+  const collect = (x) => {
+    if (!x || typeof x !== 'object') return
+    if (Array.isArray(x)) { x.forEach(collect); return }
+    if (x['solid:forClass'] || x['http://www.w3.org/ns/solid/terms#forClass']) nodes.push(x)
+    for (const v of Object.values(x)) if (typeof v === 'object') collect(v)
+  }
+  collect(ti)
+
+  return nodes
+    .filter(n => idOf(n['solid:forClass'] || n['http://www.w3.org/ns/solid/terms#forClass']) === TRACKER_CLASS)
+    .map(n => idOf(n['solid:instance'] || n['http://www.w3.org/ns/solid/terms#instance']))
+    .filter(Boolean)
+}
+
+// --- one-tracker state, with optimistic edits + debounced PUT --------------
+
+function useTracker(url) {
+  const [state, setState] = useState({ loading: !!url, doc: null, error: null, status: '' })
+  const saveTimer = useRef(null)
+
+  // Initial fetch
+  useEffect(() => {
+    if (!url) return
+    let cancelled = false
+    fetchJsonLd(url.replace(/#.*$/, ''))
+      .then(doc => { if (!cancelled) setState(s => ({ ...s, loading: false, doc })) })
+      .catch(err => { if (!cancelled) setState(s => ({ ...s, loading: false, error: err.message })) })
+    return () => { cancelled = true }
+  }, [url])
+
+  // Schedule a debounced PUT after each local mutation
+  const scheduleSave = useCallback((doc) => {
+    setState(s => ({ ...s, status: 'saving' }))
+    clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => {
+      putJsonLd(url.replace(/#.*$/, ''), doc)
+        .then(() => setState(s => ({ ...s, status: 'saved' })))
+        .catch(err => setState(s => ({ ...s, status: 'error', error: err.message })))
+    }, 500)
+  }, [url])
+
+  // Mutators — each updates state optimistically then triggers save
+  const mutate = useCallback((fn) => {
+    setState(s => {
+      if (!s.doc) return s
+      const next = fn(s.doc)
+      scheduleSave(next)
+      return { ...s, doc: next, status: 'saving' }
+    })
+  }, [scheduleSave])
+
+  const issuesOf = (doc) => Array.isArray(doc.issue) ? doc.issue : (doc.issue ? [doc.issue] : [])
+  const setIssues = (doc, issues) => ({ ...doc, issue: issues })
+  const nowIso = () => new Date().toISOString()
+
+  return {
+    ...state,
+    addIssue: (summary) => mutate(d => setIssues(d, [...issuesOf(d), {
+      '@id': `#Iss${Date.now()}`,
+      '@type': d.issue?.[0]?.['@type'] || 'Vtodo',
+      summary,
+      status: d.initialState || 'NEEDS-ACTION',
+      created: nowIso(),
+      modified: nowIso(),
+    }])),
+    toggleIssue: (issueId) => mutate(d => setIssues(d, issuesOf(d).map(it =>
+      it['@id'] === issueId
+        ? { ...it, status: it.status === 'COMPLETED' ? 'NEEDS-ACTION' : 'COMPLETED', modified: nowIso() }
+        : it))),
+    editIssue: (issueId, summary) => mutate(d => setIssues(d, issuesOf(d).map(it =>
+      it['@id'] === issueId ? { ...it, summary, modified: nowIso() } : it))),
+    deleteIssue: (issueId) => mutate(d => setIssues(d, issuesOf(d).filter(it => it['@id'] !== issueId))),
+  }
+}
+
+// --- UI components ----------------------------------------------------------
+
+function IssueRow({ issue, onToggle, onEdit, onDelete }) {
+  const [editing, setEditing] = useState(false)
+  const inputRef = useRef(null)
+  useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editing])
+
+  const done = issue.status === 'COMPLETED'
+  const commit = () => { const v = inputRef.current.value.trim(); if (v && v !== issue.summary) onEdit(v); setEditing(false) }
+
+  return html`
+    <div class=${'issue ' + (done ? 'done' : '')}>
+      <div class=${'check ' + (done ? 'on' : '')} onClick=${onToggle}>${done ? '\u2713' : ''}</div>
+      ${editing
+        ? html`<div class="summary editing"><input ref=${inputRef} defaultValue=${issue.summary || ''} onBlur=${commit} onKeyDown=${(e) => { if (e.key === 'Enter') { e.preventDefault(); commit() } if (e.key === 'Escape') { e.preventDefault(); setEditing(false) } }} /></div>`
+        : html`<div class="summary" onClick=${() => setEditing(true)}>${issue.summary || '(untitled)'}</div>`}
+      <div class="del" title="Delete" onClick=${onDelete}>\u00d7</div>
+    </div>`
+}
+
+function Tracker({ url }) {
+  const t = useTracker(url)
+  const [draft, setDraft] = useState('')
+
+  const submit = (e) => {
+    e?.preventDefault?.()
+    const v = draft.trim()
+    if (!v) return
+    t.addIssue(v)
+    setDraft('')
+  }
+
+  if (t.loading) return html`<div class="col"><div class="col-head"><div class="col-title">Loading…</div></div></div>`
+  if (t.error && !t.doc) return html`<div class="col"><div class="col-head"><div class="col-title">Error</div></div><div class="err">${t.error}</div></div>`
+  const doc = t.doc || {}
+  const issues = Array.isArray(doc.issue) ? doc.issue : (doc.issue ? [doc.issue] : [])
+  const open = issues.filter(i => i.status !== 'COMPLETED').length
+
+  return html`
+    <div class="col">
+      <div class="col-head">
+        <div class="col-title">${doc.title || url.split('/').pop()}</div>
+        <div class="col-count">${open}/${issues.length}</div>
+        ${t.status && html`<div class=${'col-status ' + t.status}>${t.status === 'saving' ? '\u2026 saving' : t.status === 'saved' ? '\u2713 saved' : '\u26a0 ' + (t.error || 'error')}</div>`}
+      </div>
+      <div class="issues">
+        ${issues.map(it => html`<${IssueRow} key=${it['@id']} issue=${it}
+          onToggle=${() => t.toggleIssue(it['@id'])}
+          onEdit=${(v) => t.editIssue(it['@id'], v)}
+          onDelete=${() => t.deleteIssue(it['@id'])} />`)}
+      </div>
+      <form class="add-row" onSubmit=${submit}>
+        <input type="text" placeholder="+ add task…" value=${draft} onInput=${(e) => setDraft(e.target.value)} />
+      </form>
+    </div>`
+}
+
+// --- App --------------------------------------------------------------------
+
+function App() {
+  const identity = useXlogin()
+  const webid = identity?.type === 'solid' ? identity.id : null
+  const [trackerUrls, setTrackerUrls] = useState(null)
+  const [discErr, setDiscErr] = useState(null)
+
+  useEffect(() => {
+    if (!webid) { setTrackerUrls(null); setDiscErr(null); return }
+    let cancelled = false
+    setTrackerUrls(null); setDiscErr(null)
+    discoverTrackerUrls(webid)
+      .then(urls => { if (!cancelled) setTrackerUrls(urls) })
+      .catch(err => { if (!cancelled) setDiscErr(err.message) })
+    return () => { cancelled = true }
+  }, [webid])
+
+  const shortId = identity?.id?.length > 36 ? identity.id.slice(0, 34) + '\u2026' : identity?.id
+
+  return html`
+    <div class="topbar">
+      <div class="brand"><span class="logo">\u2705</span><span>Tasks</span></div>
+      <div class="grow"></div>
+      <div class="who">
+        ${identity
+          ? html`Signed in · <strong>${identity.type}</strong><br/><code>${shortId}</code>`
+          : 'Not signed in'}
+      </div>
+    </div>
+    <main>
+      <h1 class="heading">Tasks</h1>
+      <p class="sub">Trackers discovered through your TypeIndex. All edits PUT back to your pod.</p>
+
+      ${!webid && html`<div class="empty">Sign in via the button bottom-right to load your trackers.</div>`}
+      ${webid && discErr && html`<div class="err">Discovery failed: ${discErr}</div>`}
+      ${webid && !trackerUrls && !discErr && html`<div class="empty">Discovering trackers in your pod\u2026</div>`}
+      ${webid && trackerUrls && trackerUrls.length === 0 && html`<div class="empty">No <code>wf:Tracker</code> registrations in your TypeIndex yet.</div>`}
+      ${webid && trackerUrls && trackerUrls.length > 0 && html`
+        <div class="columns">
+          ${trackerUrls.map(u => html`<${Tracker} key=${u} url=${u} />`)}
+        </div>`}
+
+      <div class="footer-tag">stage 06 \u2014 full read/write \u2014 add, toggle, edit, delete \u2192 PUT via <code>xlogin.authFetch</code></div>
+    </main>`
+}
+
+render(html`<${App} />`, document.getElementById('app'))
+</script>
+
+</body>
+</html>

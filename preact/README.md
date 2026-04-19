@@ -15,7 +15,8 @@ Each stage is a single self-contained HTML file (zero build). A stage graduates 
 | 03-routing | Hand-rolled `useHashRoute` hook, persistent left sidebar nav, three views (Profile / Contacts / Calendar) in one SPA. One data island per view, typed. Read-only — edit is stage 2's concern, not repeated here. |
 | 04-login | xlogin integration (Nostr/Solid). Listens for `xlogin`/`xlogout` events, shows the live identity in the sidebar, fetches the Solid WebID doc as JSON-LD after login, normalizes common foaf/vcard predicates, and overlays fetched values onto the sample island. Graceful fallback when the pod doesn't speak JSON-LD. |
 | 05-discovery | TypeIndex discovery — fetches `solid:publicTypeIndex`, walks `solid:TypeRegistration` nodes for `solid:forClass` + `solid:instance`, and renders a Tasks view backed by the user's `wf:Tracker` resources in their pod. Settings exposes the registration list as a debug aid. No Turtle parser — relies on pods that serve JSON-LD via conneg. |
-| 06+ | TBD — whatever the previous stages surface as the next limit. |
+| 06-tasks | First focused single-purpose app: Tasks. Discovers `wf:Tracker` registrations via TypeIndex, fetches each, renders kanban columns. Add / toggle / edit / delete tasks → debounced PUT back to the pod via `xlogin.authFetch`. The closing of the read/write loop. |
+| 07+ | TBD — whatever the previous stages surface as the next limit. |
 
 ## Findings
 
