@@ -60,16 +60,21 @@ A typical app composes the stack:
 <!-- 1. JSON-LD data island, inline (or load from a pod via ?uri= query param) -->
 <script type="application/ld+json">{ "@type": "Tracker", "issue": [...] }</script>
 
-<!-- 2. Panes — declare which to load (LOSOS picks via canHandle) -->
+<!-- 2. Login (xlogin: Nostr NIP-07/NIP-98 + Solid OIDC/DPoP).
+     One script tag adds the Login button and exposes window.xlogin.authFetch
+     which LOSOS panes prefer over plain fetch for pod writes. -->
+<script src="https://unpkg.com/xlogin"></script>
+
+<!-- 3. Panes — declare which to load (LOSOS picks via canHandle) -->
 <script type="module" data-pane src="https://losos.org/panes/todo-pane.js"></script>
 <script type="module" data-pane src="https://losos.org/panes/schema-pane.js"></script>
 <script type="module" data-pane src="https://solid-panes.github.io/schema-view.js"></script>
 <script type="module" data-pane src="https://losos.org/panes/source-pane.js"></script>
 
-<!-- 3. Mount point -->
+<!-- 4. Mount point -->
 <div id="losos"></div>
 
-<!-- 4. Boot: autoSchema patches $schema based on @type, then shell -->
+<!-- 5. Boot: autoSchema patches $schema based on @type, then shell -->
 <script type="module">
   import { autoSchema } from 'https://solid-panes.github.io/auto-schema.js'
   await autoSchema()
@@ -86,6 +91,20 @@ That's the universal pattern. What changes between apps is mostly: the data, whi
 3. `npm run validate && npm run build`.
 4. Commit + push.
 5. The catalog (https://solid-apps.github.io/) and reverse-index update automatically.
+
+## Authentication
+
+xlogin (https://github.com/melvincarvalho/xlogin) is the auth layer of the stack — a single `<script src="https://unpkg.com/xlogin">` tag adds a Login button supporting both Nostr (NIP-07/NIP-98) and Solid (OIDC/DPoP). On login it exposes:
+
+- `window.xlogin.type` — `"nostr"` or `"solid"`
+- `window.xlogin.id` — the user's pubkey or WebID
+- `window.xlogin.authFetch(url, opts)` — authenticated fetch (NIP-98 or DPoP based on login type)
+
+LOSOS's panes already prefer `window.xlogin.authFetch` over plain `fetch` for writes — the pattern is `(window.xlogin && window.xlogin.authFetch) || fetch`. Adding the script tag is enough to enable real-pod writes; nothing else changes.
+
+To target a real pod resource at runtime, the user appends `?uri=https://my.pod/today.jsonld` to the app URL. LOSOS's shell fetches it with `authFetch` and round-trips edits via authenticated PUT.
+
+See https://github.com/melvincarvalho/xlogin/blob/gh-pages/SKILL.md for the full xlogin API.
 
 ## Don't
 
@@ -108,3 +127,4 @@ That's the universal pattern. What changes between apps is mostly: the data, whi
 - `solid-schema` — type contracts
 - `solid-panes` — pane registry (which pane handles which type)
 - `losos` — runtime
+- `xlogin` — auth (Nostr + Solid). https://github.com/melvincarvalho/xlogin/blob/gh-pages/SKILL.md
