@@ -384,63 +384,74 @@ function useHashRoute(fallback) {
 const niceLink = (u) => (u || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
 const initial  = (s) => (s || '?').trim().split(/\s+/).pop().charAt(0).toUpperCase()
 
+// useState-driven img with fallback. Avoids DOM-swap closures that break
+// across re-renders. If src changes, error state resets.
+function Avatar({ src, name }) {
+  const [errored, setErrored] = useState(false)
+  useEffect(() => { setErrored(false) }, [src])
+  if (!src || errored) return html`<div class="photo-fallback">${initial(name)}</div>`
+  return html`<img class="photo" src=${src} alt=${name} onError=${() => setErrored(true)} />`
+}
+
+function EmptyFact({ icon, text }) {
+  return html`<div class="fact" style=${{ opacity: 0.5, fontStyle: 'italic' }}><span class="ic">${icon}</span><span>${text}</span></div>`
+}
+
 function ProfileView({ identity }) {
   const island = readIsland('profile') || {}
   const webid = identity?.type === 'solid' ? identity.id : null
   const fetched = useProfileFor(webid)
 
-  // Merge strategy: start from embedded island as a baseline, overlay fetched
-  // values. That way UI fields the pod doesn't provide (bio, skills, etc.)
-  // don't vanish — they just remain at sample values for the demo.
-  const data = fetched.data ? { ...island, ...fetched.data } : island
+  // Honesty mode: when signed in, show ONLY what the pod returned. Missing
+  // fields get placeholder slots (not sample leakage). When not signed in,
+  // render the embedded sample so the page isn't empty on first visit.
+  const isPod  = !!fetched.data
+  const data   = isPod ? fetched.data : island
   const { name, nick, pronouns, address, email, phone, homepage, img, bio, skills = [], languages = [] } = data
-  const source = fetched.data ? 'pod' : (fetched.loading ? 'loading' : (fetched.error ? 'error' : 'sample'))
+  const source = isPod ? 'pod' : (fetched.loading ? 'loading' : (fetched.error ? 'error' : 'sample'))
+
   return html`
     <div>
     <div style=${{ marginBottom: '14px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '12px', color: 'var(--muted)' }}>
       ${source === 'pod'     && html`<span class="island-badge" style=${{ background: '#d1fae5', color: '#065f46' }}>live</span><span>Fetched from <code>${webid}</code></span>`}
       ${source === 'loading' && html`<span class="island-badge">…</span><span>Fetching <code>${webid}</code></span>`}
-      ${source === 'error'   && html`<span class="island-badge" style=${{ background: '#fee2e2', color: '#991b1b' }}>error</span><span>${fetched.error} — falling back to sample</span>`}
+      ${source === 'error'   && html`<span class="island-badge" style=${{ background: '#fee2e2', color: '#991b1b' }}>error</span><span>${fetched.error} — showing sample</span>`}
       ${source === 'sample'  && html`<span class="island-badge" style=${{ background: '#fef3c7', color: '#92400e' }}>sample</span><span>Sign in via the login button to load your WebID</span>`}
     </div>
     <div class="two-col">
       <div>
         <div class="card">
           <div class="hero">
-            ${img
-              ? html`<img class="photo" src=${img} alt=${name} onerror=${(e) => { const f = document.createElement('div'); f.className = 'photo-fallback'; f.textContent = initial(name); e.target.replaceWith(f) }} />`
-              : html`<div class="photo-fallback">${initial(name)}</div>`}
+            <${Avatar} src=${img} name=${name} />
             <div>
               <h1 class="name">
-                <span>${name}</span>
+                <span>${name || (isPod ? 'Anonymous' : 'Sample')}</span>
                 ${pronouns && html`<span class="pronoun">(${pronouns})</span>`}
               </h1>
               <div class="facts">
-                ${address  && html`<div class="fact"><span class="ic">\u{1F4CD}</span><span>${address}</span></div>`}
-                ${phone    && html`<div class="fact"><span class="ic">\u{260E}\uFE0F</span><a href="tel:${phone.replace(/\s+/g,'')}">${phone}</a></div>`}
-                ${email    && html`<div class="fact"><span class="ic">\u{2709}\uFE0F</span><a href="mailto:${email}">${email}</a></div>`}
-                ${homepage && html`<div class="fact"><span class="ic">\u{1F310}</span><a href=${homepage} target="_blank" rel="noopener">${niceLink(homepage)}</a></div>`}
+                ${address  ? html`<div class="fact"><span class="ic">\u{1F4CD}</span><span>${address}</span></div>`
+                           : (isPod && html`<${EmptyFact} icon="\u{1F4CD}" text="Add address" />`)}
+                ${phone    ? html`<div class="fact"><span class="ic">\u{260E}\uFE0F</span><a href="tel:${phone.replace(/\s+/g,'')}">${phone}</a></div>`
+                           : (isPod && html`<${EmptyFact} icon="\u{260E}\uFE0F" text="Add phone" />`)}
+                ${email    ? html`<div class="fact"><span class="ic">\u{2709}\uFE0F</span><a href="mailto:${email}">${email}</a></div>`
+                           : (isPod && html`<${EmptyFact} icon="\u{2709}\uFE0F" text="Add email" />`)}
+                ${homepage ? html`<div class="fact"><span class="ic">\u{1F310}</span><a href=${homepage} target="_blank" rel="noopener">${niceLink(homepage)}</a></div>`
+                           : (isPod && html`<${EmptyFact} icon="\u{1F310}" text="Add homepage" />`)}
               </div>
             </div>
           </div>
         </div>
-        ${bio && html`
-          <div class="card">
-            <h2 class="section-title">Bio</h2>
-            <p class="prose">${bio}</p>
-          </div>`}
+        ${bio
+          ? html`<div class="card"><h2 class="section-title">Bio</h2><p class="prose">${bio}</p></div>`
+          : (isPod && html`<div class="card"><h2 class="section-title">Bio</h2><p class="prose" style=${{ color: 'var(--muted)', fontStyle: 'italic' }}>No bio in your WebID yet. Stage 5 will add inline editing that writes back to your pod.</p></div>`)}
       </div>
       <div>
-        ${skills.length > 0 && html`
-          <div class="card">
-            <h3 class="side-title">Skills</h3>
-            <div class="pills">${skills.map(s => html`<span class="pill">${s}</span>`)}</div>
-          </div>`}
-        ${languages.length > 0 && html`
-          <div class="card">
-            <h3 class="side-title">Languages</h3>
-            <ul class="list-plain">${languages.map(l => html`<li>${l}</li>`)}</ul>
-          </div>`}
+        ${skills.length > 0
+          ? html`<div class="card"><h3 class="side-title">Skills</h3><div class="pills">${skills.map(s => html`<span class="pill">${s}</span>`)}</div></div>`
+          : (isPod && html`<div class="card"><h3 class="side-title">Skills</h3><div style=${{ color: 'var(--muted)', fontStyle: 'italic', fontSize: '13px' }}>Not in your WebID</div></div>`)}
+        ${languages.length > 0
+          ? html`<div class="card"><h3 class="side-title">Languages</h3><ul class="list-plain">${languages.map(l => html`<li>${l}</li>`)}</ul></div>`
+          : (isPod && html`<div class="card"><h3 class="side-title">Languages</h3><div style=${{ color: 'var(--muted)', fontStyle: 'italic', fontSize: '13px' }}>Not in your WebID</div></div>`)}
       </div>
     </div>
     </div>
