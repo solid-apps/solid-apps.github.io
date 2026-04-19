@@ -1,19 +1,21 @@
-DATA LICENSE — CC0 1.0 Universal (Public Domain Dedication)
-============================================================
+DATA LICENSE — CC BY 4.0 (Creative Commons Attribution 4.0 International)
+==========================================================================
 
-The catalog metadata files in this repository are dedicated to the
-public domain under CC0 1.0 Universal. To the extent possible under
-law, Melvin Carvalho has waived all copyright and related or
-neighboring rights to these files. Anyone may copy, modify, distribute,
-and perform them, even for commercial purposes, all without asking
-permission.
+The catalog metadata files in this repository are licensed under the
+Creative Commons Attribution 4.0 International License (CC BY 4.0).
+You are free to share and adapt the material for any purpose, including
+commercially, provided you give appropriate credit and indicate any
+changes.
 
-Full legal text: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+Suggested attribution: "solid-apps catalog, https://solid-apps.github.io/,
+licensed under CC BY 4.0."
+
+Full legal text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 What this covers
 ----------------
 
-CC0 applies to the solid-apps catalog metadata:
+CC BY 4.0 applies to the solid-apps catalog metadata:
 
   - <slug>/app.json              — each app's catalog manifest
   - schema/app.schema.json       — meta-schema for app.json
@@ -37,6 +39,6 @@ Why
 
 The catalog is a directory — knowing what apps exist and what types
 they handle should be friction-free for any other catalog or
-discovery tool to consume. The apps themselves carry copyleft so
-their *implementations* stay AGPL while the *fact of their
-existence* (and which urn:solid types they serve) is public domain.
+discovery tool to consume (with attribution). The apps themselves carry
+copyleft so their *implementations* stay AGPL while the *catalog
+metadata* (which apps exist, types they serve) is CC BY 4.0.
