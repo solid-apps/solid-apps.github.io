@@ -67,6 +67,10 @@
 }
 </script>
 
+<!-- Login (xlogin: Nostr + Solid). Adds the purple Login button bottom-right;
+     LOSOS panes pick up window.xlogin.authFetch for authenticated writes. -->
+<script src="https://unpkg.com/xlogin"></script>
+
 <!-- Panes — todo-pane handles the Tracker, schema-view + source for individual Vtodos -->
 <script type="module" data-pane src="https://losos.org/panes/todo-pane.js"></script>
 <script type="module" data-pane src="https://losos.org/panes/schema-pane.js"></script>
