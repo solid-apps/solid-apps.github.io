@@ -1,6 +1,6 @@
 # solid-apps
 
-Working LOSOS applications built on the [LION](https://linkedobjects.org/) + [urn-solid](https://urn-solid.github.io/) + [solid-schema](https://solid-schema.github.io/) + [solid-panes](https://solid-panes.github.io/) + [LOSOS](https://losos.org/) stack.
+Working LOSOS applications built on the [LION](https://linkedobjects.org/) + [urn-solid](https://urn-solid.com/) + [solid-schema](https://solid-schema.github.io/) + [solid-panes](https://solid-panes.github.io/) + [LOSOS](https://losos.org/) stack.
 
 Each app is a single-HTML-file application that handles one or more `urn:solid:` types. Open the URL to use it.
 
